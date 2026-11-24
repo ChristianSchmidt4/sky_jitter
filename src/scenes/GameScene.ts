@@ -167,6 +167,7 @@ export class GameScene extends Phaser.Scene {
     private nextMissileMs!: number
     private firing!: boolean
     private tilt!: number
+    private tiltY!: number
     private spawned!: number
     private spawnTimerS!: number
     private shieldTimerS!: number
@@ -199,8 +200,9 @@ export class GameScene extends Phaser.Scene {
     private hintText!: Phaser.GameObjects.Text
     private overlayText!: Phaser.GameObjects.Text
     private bossBar!: Phaser.GameObjects.Rectangle
-    private onTilt = (gamma: number): void => {
+    private onTilt = (gamma: number, beta: number): void => {
         this.tilt = gamma
+        this.tiltY = beta
     }
     private onShake = (magnitude: number): void => {
         const strength = Math.abs(magnitude)
@@ -246,6 +248,7 @@ export class GameScene extends Phaser.Scene {
         this.nextMissileMs = 0
         this.firing = false
         this.tilt = 0
+        this.tiltY = 0
         this.spawned = 0
         this.spawnTimerS = 0
         this.shieldTimerS = SHIELD_EVERY_S
@@ -385,7 +388,9 @@ export class GameScene extends Phaser.Scene {
         const axis = Phaser.Math.Clamp(keyX + tiltX, -1, 1)
         this.px = Phaser.Math.Clamp(this.px + axis * PLAYER_SPEED * dt, PLAYER_EDGE, W - PLAYER_EDGE)
         const keyY = (this.cursors?.down.isDown ? 1 : 0) - (this.cursors?.up.isDown ? 1 : 0)
-        this.py = Phaser.Math.Clamp(this.py + keyY * PLAYER_Y_SPEED * dt, PLAYER_MIN_Y, PLAYER_MAX_Y)
+        const tiltY = Phaser.Math.Clamp(this.tiltY / 25, -1, 1)
+        const axisY = Phaser.Math.Clamp(keyY + tiltY, -1, 1)
+        this.py = Phaser.Math.Clamp(this.py + axisY * PLAYER_Y_SPEED * dt, PLAYER_MIN_Y, PLAYER_MAX_Y)
         this.invulnS = Math.max(0, this.invulnS - dt)
         const blink = this.invulnS > 0 && Math.floor(this.clockMs / 100) % 2 === 0
         this.player.setPosition(this.px, this.py).setAlpha(blink ? 0.3 : 1)

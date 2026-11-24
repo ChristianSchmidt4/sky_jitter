@@ -33,7 +33,6 @@ const game = new Phaser.Game({
 })
 // Debug hook for automated tests (dev server only)
 if (import.meta.env.DEV) (window as unknown as { __game?: Phaser.Game }).__game = game
-
 // Landscape enforcement: show a hint while the device is held upright
 function updateOrientationHint(): void {
   const portrait = window.innerHeight > window.innerWidth
@@ -59,10 +58,14 @@ async function requestSensors(): Promise<boolean> {
   }
 }
 // In landscape, gamma is the left/right tilt; when rotated the axis moves to beta
+// Inverted gamma for intuitive left/right control, beta for forward/backward
 window.addEventListener('deviceorientation', (e: DeviceOrientationEvent) => {
   const angle = window.screen.orientation?.angle ?? 0
-  const gamma = angle === 90 || angle === -270 ? -(e.beta ?? 0) : (e.gamma ?? 0)
-  game.events.emit('tilt', gamma)
+  // Invert gamma for intuitive left/right control
+  const gamma = angle === 90 || angle === -270 ? (e.beta ?? 0) : -(e.gamma ?? 0)
+  // Beta controls forward/backward movement
+  const beta = angle === 90 || angle === -270 ? (e.gamma ?? 0) : (e.beta ?? 0)
+  game.events.emit('tilt', gamma, beta)
 })
 // Shake detection: magnitude of acceleration minus gravity, throttled
 let lastShakeEmit = 0
