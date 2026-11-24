@@ -1,0 +1,43 @@
+import { test, expect } from '@playwright/test'
+test.describe('Sky Jitter - Screenshot Tests', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('http://localhost:5173/')
+    await page.click('#start-button')
+    await page.waitForTimeout(1000)
+  })
+  test('start screen shows', async ({ page }) => {
+    await expect(page.locator('#start-overlay')).toBeVisible()
+    await page.screenshot({ path: 'tests/screenshots/01-start.png', fullPage: true })
+  })
+  test('game scene renders', async ({ page }) => {
+    await expect(page.locator('#game-root')).toBeVisible()
+    await page.screenshot({ path: 'tests/screenshots/02-game-start.png', fullPage: true })
+  })
+  test('player ship visible', async ({ page }) => {
+    const player = page.locator('canvas').first()
+    await expect(player).toBeVisible()
+    await page.screenshot({ path: 'tests/screenshots/03-player.png', fullPage: true })
+  })
+  test('HUD displays', async ({ page }) => {
+    await page.screenshot({ path: 'tests/screenshots/04-hud.png', fullPage: true })
+  })
+  test('pause overlay', async ({ page }) => {
+    await page.keyboard.press('KeyP')
+    await page.waitForTimeout(300)
+    await page.screenshot({ path: 'tests/screenshots/05-paused.png', fullPage: true })
+    await page.keyboard.press('KeyP')
+    await page.waitForTimeout(300)
+    await page.screenshot({ path: 'tests/screenshots/06-resumed.png', fullPage: true })
+  })
+  test('shooting', async ({ page }) => {
+    await page.keyboard.down('Space')
+    await page.waitForTimeout(500)
+    await page.screenshot({ path: 'tests/screenshots/07-shooting.png', fullPage: true })
+    await page.keyboard.up('Space')
+  })
+  test('missile launch', async ({ page }) => {
+    await page.keyboard.press('KeyX')
+    await page.waitForTimeout(500)
+    await page.screenshot({ path: 'tests/screenshots/08-missile.png', fullPage: true })
+  })
+})
