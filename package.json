@@ -16,7 +16,8 @@
   "devDependencies": {
     "playwright": "^1.65.1",
     "typescript": "^7.0.2",
-    "vite": "^8.3.6"
+    "vite": "^8.3.6",
+    "@playwright/test": "^1.65.1"
   },
   "dependencies": {
     "phaser": "^4.2.1"
