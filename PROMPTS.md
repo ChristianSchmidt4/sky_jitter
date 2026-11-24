@@ -13,51 +13,67 @@ Jeder Prompt wird hier protokolliert. Spätere Prompts beziehen sich auf dieses 
 - **Build-Tool:** Vite
 - **Spiele-Framework:** Phaser 4 (installiert: 4.2.1)
 - **Audio:** Chiptune-Hintergrundmusik (8-Bit, abschaltbar), passend zur Szene
-- **Speicherung:** `localStorage` (Highscore, Einstellungen)
-- **Sprache:** JavaScript (ES-Module)
+- **Speicherung:** `localStorage` (Highscore, Einstellungen, Sprache)
+- **Sprache:** TypeScript (ES-Module, strict mode)
+- **Testing:** Playwright (Screenshot- und Smoke-Tests)
+- **Deployment:** GitHub Pages (Build mit `npm run build:github`, base `/sky_jitter/`)
 ### 2.1 Projektstruktur
 ```
 index.html            Einstiegspunkt, Overlays (Start, Querformat-Hinweis)
-src/main.js           Phaser-Initialisierung, Sensor-Freigabe, Tilt-Events
+vite.config.ts        Vite-Konfiguration (GitHub-Pages-Base)
+playwright.config.ts  Playwright-Testkonfiguration
+public/               PWA-Manifest, Icons, Favicon
+src/main.ts           Phaser-Initialisierung, Sensor-Freigabe, Tilt-Events
 src/style.css         Globale Styles, Overlays
-src/scenes/           Phaser-Szenen (GameScene, später Menü, Game Over ...)
-src/i18n/             Sprachdateien (de.json, en.json) und Übersetzungs-Helfer
+src/scenes/GameScene.ts Zentrale Spielszene (Ablauf, Eingaben, Kollisionen, HUD)
+src/game/sprites.ts     Prozedurale Texturen (Schiff, Gegner, Waffen, Widgets)
+src/game/weapons.ts     Waffenstufen 1–10 und Schuss-Spezifikationen
+src/game/background.ts  Parallax-Sternfeld, Galaxien-Nebel
+src/audio/audio.ts      Audio-Manager (SFX, Musik, Web Audio API)
+src/audio/music.ts      Songdaten (menu, level, boss)
+src/i18n/               Sprachdateien (de.json, en.json) und Übersetzungs-Helfer
+tests/                  Playwright-Tests (smoke.test.ts, skyjitter.test.ts) + Screenshots
 ```
 ## 3. Konzept
 ### 3.1 Steuerung
-- **Bewegung:** Gerätelage (`DeviceOrientationEvent`), Neigung links/rechts bewegt das Schiff.
+- **Bewegung:** Gerätelage (`DeviceOrientationEvent`), Neigung links/rechts bewegt das Schiff, Neigung vor/zurück die Höhe.
 - **Schießen:** Tippen/Drücken auf das Spielfeld.
-- **Spezialschuss:** Schütteln (`DeviceMotionEvent`). Die Anzahl der abgefeuerten Raketen hängt von Intensität und Dauer des Schüttelns ab.
+- **Spezialschuss:** Schütteln (`DeviceMotionEvent`). Die Anzahl der abgefeuerten Raketen hängt von Intensität und Dauer des Schüttelns ab (bis zu 3 Raketen pro Schütteln).
 - **iOS:** Der Gyroskop-Zugriff muss per Button-Tap freigegeben werden (`DeviceOrientationEvent.requestPermission()`).
-- **Desktop-Fallback:** Pfeiltasten (links/rechts) und Leertaste.
+- **Desktop-Fallback:** Pfeiltasten (links/rechts, hoch/runter) und Leertaste.
+- **Pause:** P-Taste oder Tippen auf den Pause-Button im HUD.
+- **Neustart:** R-Taste oder Tippen auf das Overlay.
 ### 3.2 Spielprinzip
 - **Gegner:** Angreifer fliegen in Formationen von oben und feuern zurück. Gegner können ausweichen oder abgeschossen werden.
 - **Markierte Gegner:** Bestimmte Gegner sind markiert. Beim Abschuss lassen sie leuchtende **Raketen-Widgets** fallen, die der Spieler einsammeln muss.
 - **Punkte:** Jeder Gegnertyp bringt unterschiedlich viele Punkte.
-- **Extraleben:** Bei festen Punktegrenzen (Vorschlag: 5.000 / 15.000 / 30.000 …).
+- **Extraleben:** Bei festen Punktegrenzen (alle 5.000 Punkte).
 - **Leben:** Start mit **5 Leben**. Keine Leben mehr = Game Over. Leben sind endlich.
+- **Schild:** Vorstufe zum Leben (0–100 %). Treffer ziehen zuerst vom Schild ab, erst ohne Schild kostet ein Treffer ein Leben.
+- **Sieg:** Nach allen 50 Leveln.
 ### 3.3 Level
 - **Anzahl:** 50 Level.
 - **Fortschritt:** Schwierigkeit und Dauer steigen mit jedem Level.
-- **Bosse:** Starke Zwischengegner in festen Abständen (Vorschlag: alle 10 Level), mit eigenen Angriffsmustern.
+- **Bosse:** Starke Zwischengegner alle 10 Level, mit eigenen Angriffsmustern.
+- **Intermission:** Kurze Pause (1,6 s) zwischen den Leveln.
 ### 3.4 Waffen & Upgrades
 - **Upgrade-Wege (beides):**
-  - Automatisch durch Punkteschwellen
+  - Automatisch durch Punkteschwellen (alle 2.500 Punkte)
   - Durch Power-Ups, die Gegner fallen lassen
-- **Upgrade-Beispiele:** Schussrate, Schaden, Doppelschuss, Schussbreite.
-### 3.5 Darstellung (umschaltbar)
-- **8-Bit:** Pixel-Art-Stil.
-- **Vector:** Geometrische Formen mit Neon-Effekten.
-- **Level-Random:** Stil wird pro Level zufällig gewählt.
-- Die Umschaltung erfolgt über das Einstellungsmenü.
+- **Stufen:** 10 Waffenstufen mit mehr Schüssen, höherem Schaden und seitlichen/rückwärtigen Richtungen ab Stufe 6.
+### 3.5 Darstellung
+- **Prozedurale Vektor-Texturen:** Alle Sprites werden per Phaser-Graphics gezeichnet, keine Bild-Assets.
+- **Hintergrund:** Parallax-Sternfeld (3 Ebenen) plus Galaxien-Nebel.
 ### 3.6 Sprache (i18n)
 - Mehrsprachig, umschaltbar.
 - **Standard:** Browsersprache.
-- **Struktur:** Eine Sprachdatei pro Sprache (`src/i18n/de.json`, `src/i18n/en.json`). Neue Sprachen werden nur durch Hinzufügen einer Datei und Registrierung in `src/i18n/index.js` ergänzt.
+- **Struktur:** Eine Sprachdatei pro Sprache (`src/i18n/de.json`, `src/i18n/en.json`). Neue Sprachen werden nur durch Hinzufügen einer Datei und Registrierung in `src/i18n/index.ts` ergänzt.
 - Keine Texte hartcodiert im Spielcode.
+- Auswahl wird in `localStorage` gespeichert.
 ### 3.7 Audio
 - 8-Bit-Hintergrundmusik, abschaltbar (Einstellung wird in `localStorage` gespeichert).
-- Musikstil passt zur aktuellen Szene (Menü, Level, Boss, Game Over).
+- Musikstil passt zur aktuellen Szene (Menü, Level, Boss).
+- Soundeffekte: Schuss, Explosion, Pickup, Treffer.
 ## 4. Entwicklungsregeln (für alle Prompts)
 1. Vor jeder Änderung diese Datei lesen und die Regeln einhalten.
 2. Neue Entscheidungen werden hier ergänzt, nicht nur im Chat getroffen.
@@ -67,14 +83,10 @@ src/i18n/             Sprachdateien (de.json, en.json) und Übersetzungs-Helfer
 6. Keine Server-Abhängigkeiten. Alles läuft im Client.
 ## 5. Offene Punkte
 - Feinabstimmung Balancing (Punkte, Gegnerzahl, Boss-HP)
-- Sounds und 8-Bit-Musik (noch nicht umgesetzt)
-- Upgrades für Waffen (noch nicht umgesetzt)
+- Einstellungsmenü (Musik-Umschaltung, Darstellungsstile) – Musik-Toggle im Code vorhanden, UI noch offen
 - Darstellungsstile 8-Bit / Vector (noch nicht umgesetzt)
-- Anzahl und Typen der Gegner und Bosse
-- Genaue Upgrade-Stufen
-- Gestaltung der Power-Ups und Raketen-Widgets
 - Umfang der Musikstücke (ein Stück pro Szene oder pro Level)
-- PWA-Manifest und Icons
+- Test auf echtem Gerät (iPhone 11)
 ## 6. Prompt-Historie
 | # | Datum | Prompt (Kurzfassung) | Ergebnis |
 |---|-------|----------------------|----------|
@@ -86,3 +98,6 @@ src/i18n/             Sprachdateien (de.json, en.json) und Übersetzungs-Helfer
 | 6 | 2026-11-24 | Höheres Waffenlevel, seitliches/rückwärtiges Schießen (Spieler kann weiter nach vorne, Gegner sinken weiter in den unteren Bereich), Kontakt mit Gegner wie Treffer, zielsuchende Raketen für Gegner | Waffenstufen auf 10 erhöht (Stufen 8–10: seitliche Diagonalen, Rückwärtsschüsse, höherer Schaden). Spieler-Mindesthöhe 260 → 170. Gegner sinken nach der Formation weiter nach unten und verschwinden am unteren Rand. Kontakt mit Gegner/Boss wirkt wie Treffer. Saucer (ab Level 3) und Fighter (ab Level 6) feuern zielsuchende Raketen, abschießbar. `check:syntax` fehlerfrei |
 | 7 | 2026-11-24 | Feinde stärker in höheren Levels (schnellere/häufigere Raketen), Bosse härter, weniger Widgets | Raketen-Geschwindigkeit +3 pro Level, Drehrate +0,08 pro Level. Saucer alle 5 s, Fighter alle 3 s. Boss-Basis-HP 160 (+30/Level). Drop-Chancen: Markiert 12 %, Waffe 3 %, Schild 4 %. Nebel-Textur zu Galaxien/Nebel umgestaltet. `check:syntax` fehlerfrei |
 | 8 | 2026-11-24 | README.md erstellen, Playwright als Testing-Framework einbinden | README mit Anleitung, Spielprinzip, Elementen (Gegner, Bosse, Raketen, Widgets), Technik, Projektstruktur. Playwright installiert, playwright.config.ts und tests/skyjitter.test.ts angelegt, package.json um "test"-Skript ergänzt |
+| 9 | 2026-11-24 | Schild-Mechanik verfeinern: Schild als Vorstufe zum Leben, Schild-Treffer geben kurze Unverwundbarkeit, Schild-Widget lädt Schild auf | Schild (0–100 %) zieht Treffer zuerst ab (35 Schaden), Schild-Treffer geben 0,4 s Unverwundbarkeit, bei 0 % kostet ein Treffer ein Leben mit 1,5 s Respawn-Unverwundbarkeit. Schild-Widget (4 %) lädt Schild auf 100 %. `check:syntax` fehlerfrei |
+| 10 | 2026-11-24 | Waffenstufen-Details dokumentieren, HUD erweitern (Raketen-Munition, Waffenstufe, Pause-Button, Boss-HP-Balken) | Waffenstufen 1–10 mit Schüssen, Abklingzeit und Schaden dokumentiert. HUD zeigt Punkte, Leben, Schild, Level, Raketen, Waffe, Pause-Button und Boss-HP-Balken. `check:syntax` fehlerfrei |
+| 11 | 2026-11-24 | README.md und PROMPTS.md mit allen fehlenden Infos aus dem Code aktualisieren | README um Skripte, Waffenstufen-Tabelle, HUD, Technik-Details, Projektstruktur ergänzt. PROMPTS.md um aktuelle Struktur, implementierte Features und Prompt-Historie erweitert |
