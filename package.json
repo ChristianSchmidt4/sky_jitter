@@ -9,9 +9,11 @@
     "build": "tsc --noEmit && vite build",
     "typecheck": "tsc --noEmit",
     "check:syntax": "tsc --noEmit",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "playwright test"
   },
   "devDependencies": {
+    "playwright": "^1.65.1",
     "typescript": "^7.0.2",
     "vite": "^8.3.6"
   },
