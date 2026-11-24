@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "check:syntax": "tsc --noEmit",
     "preview": "vite preview",
-    "test": "playwright test"
+    "test": "playwright test",
+    "build:github": "tsc --noEmit && vite build --mode github-pages"
   },
   "devDependencies": {
     "playwright": "^1.65.1",
