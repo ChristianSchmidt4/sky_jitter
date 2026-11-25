@@ -130,11 +130,21 @@ function drawPickupMissile(g: Gfx): void {
   poly(g, [[12, 0], [24, 12], [12, 24], [0, 12]], 0x00ff88, 0xffffff, 2)
   g.fillStyle(0xaaffdd, 1).fillEllipse(12, 12, 8, 8)
 }
-function drawPickupWeapon(g: Gfx): void {
-  g.fillStyle(0xff9900, 0.4).fillCircle(12, 12, 12)
-  g.fillStyle(0xff9900, 1).fillCircle(12, 12, 9)
-  g.lineStyle(2, 0xffffff, 1).strokeCircle(12, 12, 9)
-  g.fillStyle(0xffffff, 1).fillTriangle(12, 5, 17, 15, 7, 15)
+// Point widget: glowing star with value-indicating color
+function drawPickupPoints(g: Gfx): void {
+  g.fillStyle(0xffff00, 0.3).fillCircle(12, 12, 12)
+  g.fillStyle(0xffdd00, 1).fillCircle(12, 12, 8)
+  g.lineStyle(2, 0xffffff, 1).strokeCircle(12, 12, 8)
+  // Star shape
+  g.fillStyle(0xffffff, 1)
+  g.fillCircle(12, 4, 2.5)
+  g.fillCircle(12, 20, 2.5)
+  g.fillCircle(4, 12, 2.5)
+  g.fillCircle(20, 12, 2.5)
+  g.fillCircle(7.5, 7.5, 2)
+  g.fillCircle(16.5, 7.5, 2)
+  g.fillCircle(7.5, 16.5, 2)
+  g.fillCircle(16.5, 16.5, 2)
 }
 export function createTextures(scene: Phaser.Scene): void {
   bake(scene, 'player', 64, 52, drawPlayer)
@@ -148,5 +158,5 @@ export function createTextures(scene: Phaser.Scene): void {
   bake(scene, 'missile', 12, 26, drawMissile)
   bake(scene, 'eshot', 10, 16, drawEnemyShot)
   bake(scene, 'pickupMissile', 24, 24, drawPickupMissile)
-  bake(scene, 'pickupWeapon', 24, 24, drawPickupWeapon)
+  bake(scene, 'pickupPoints', 24, 24, drawPickupPoints)
 }

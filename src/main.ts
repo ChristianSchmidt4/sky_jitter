@@ -100,5 +100,3 @@ startButton.addEventListener('click', () => {
 })
 // Re-acquire wake lock when the tab becomes visible again
 document.addEventListener('visibilitychange', onVisibilityChange)
-// Register the PWA update manager – shows a banner when a new version is available
-updateManager.register()

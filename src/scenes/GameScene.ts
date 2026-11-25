@@ -27,6 +27,10 @@ const SHAKE_THRESHOLD = 12 // Schwellwert fuer Schuetteln (Betrag der Beschleuni
 const ROCKET_DAMAGE = 50
 const SHIELD_HIT_INVULN_S = 0.4
 const SHIELD_PICKUP_CHANCE = 0.04
+const POINT_PICKUP_CHANCE = 0.06
+// Point widget values – small, medium, large based on enemy type
+const POINT_VALUES: number[] = [50, 100, 250]
+const LEVEL_COMPLETE_POINTS = 500 // Punkte fuer abgeschlossene Level
 const PLAYER_SPEED = 380
 const PLAYER_Y_SPEED = 220
 const PLAYER_MIN_Y = 170 // Schiff kann weiter nach vorne (oben) fliegen
@@ -52,7 +56,6 @@ const ENEMY_ROCKET_TURN_PER_LEVEL = 0.08
 const ENEMY_ROCKET_LIFE_S = 5
 const ENEMY_ROCKET_RADIUS = 10
 const MARK_CHANCE = 0.12
-const WEAPON_DROP_CHANCE = 0.03
 const PICKUP_RADIUS = 12
 const PICKUP_FALL_SPEED = 90
 const BOSS_RADIUS = 60
@@ -158,13 +161,14 @@ interface EnemyRocket extends Obj {
 interface Shield extends Obj {
     hp: number // shields absorb enemy shots, missiles detonate on them
 }
-type PickupKind = 'missile' | 'weapon' | 'shield'
+type PickupKind = 'missile' | 'points' | 'shield'
 interface Pickup extends Obj {
     kind: PickupKind
+    value: number // point value for point pickups (0 for others)
 }
 const PICKUP_TEXTURE: Record<PickupKind, string> = {
     missile: 'pickupMissile',
-    weapon: 'pickupWeapon',
+    points: 'pickupPoints',
     shield: 'pickupShield',
 }
 function isBossLevel(level: number): boolean {
@@ -195,7 +199,6 @@ export class GameScene extends Phaser.Scene {
     private score!: number
     private level!: number
     private missileAmmo!: number
-    private bonusWeapon!: number
     private weaponLevel!: number
     private invulnS!: number
     private clockMs!: number
@@ -293,7 +296,6 @@ export class GameScene extends Phaser.Scene {
         this.score = 0
         this.level = debug.level
         this.missileAmmo = START_MISSILES
-        this.bonusWeapon = 0
         this.weaponLevel = debug.weaponLevel
         this.invulnS = 0
         this.clockMs = 0
@@ -403,6 +405,7 @@ export class GameScene extends Phaser.Scene {
             this.finish('won')
             return
         }
+        this.addScore(LEVEL_COMPLETE_POINTS)
         this.level++
         this.state = 'intermission'
         this.intermissionS = INTERMISSION_S
@@ -886,8 +889,12 @@ export class GameScene extends Phaser.Scene {
             return
         }
         const roll = Math.random()
-        if (roll < WEAPON_DROP_CHANCE) this.spawnPickup('weapon', e.x, e.y)
-        else if (roll < WEAPON_DROP_CHANCE + SHIELD_PICKUP_CHANCE) this.spawnPickup('shield', e.x, e.y)
+        if (roll < POINT_PICKUP_CHANCE) {
+            // Choose point value based on enemy points (heavy enemies give more)
+            const tier = ENEMY_STATS[e.kind].points >= 400 ? 2 : ENEMY_STATS[e.kind].points >= 250 ? 1 : 0
+            this.spawnPickup('points', e.x, e.y, POINT_VALUES[tier])
+        }
+        else if (roll < POINT_PICKUP_CHANCE + SHIELD_PICKUP_CHANCE) this.spawnPickup('shield', e.x, e.y)
     }
     private damageBoss(dmg: number): void {
         const boss = this.boss
@@ -922,10 +929,11 @@ export class GameScene extends Phaser.Scene {
         }
         this.shields.push(sh)
     }
-    private spawnPickup(kind: PickupKind, x: number, y: number): void {
+    private spawnPickup(kind: PickupKind, x: number, y: number, value: number = 0): void {
         const p: Pickup = {
             ...this.makeObj(PICKUP_TEXTURE[kind], x, y, 0, PICKUP_FALL_SPEED, PICKUP_RADIUS, 8),
             kind,
+            value,
         }
         this.pickups.push(p)
     }
@@ -940,7 +948,7 @@ export class GameScene extends Phaser.Scene {
         this.refreshWeapon()
     }
     private refreshWeapon(): void {
-        const next = Math.min(MAX_WEAPON_LEVEL, 1 + Math.floor(this.score / WEAPON_UPGRADE_POINTS) + this.bonusWeapon)
+        const next = Math.min(MAX_WEAPON_LEVEL, 1 + Math.floor(this.score / WEAPON_UPGRADE_POINTS))
         if (next > this.weaponLevel) {
             this.weaponLevel = next
             this.showMessage(t('weaponUp', { level: next }), 1800)
@@ -1045,9 +1053,9 @@ export class GameScene extends Phaser.Scene {
             } else if (p.kind === 'shield') {
                 this.playerShield = PLAYER_SHIELD_MAX
                 this.showMessage(t('shieldCharged'), 1400)
-            } else {
-                this.bonusWeapon++
-                this.refreshWeapon()
+            } else if (p.kind === 'points') {
+                this.addScore(p.value)
+                this.showMessage(`+${p.value}`, 800)
             }
         }
     }
