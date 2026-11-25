@@ -370,6 +370,7 @@ export class GameScene extends Phaser.Scene {
         if (this.state === 'paused') {
             this.state = this.pausedFrom
             this.overlayText.setVisible(false)
+            audio.audioContext?.resume()
             return
         }
         if (this.state !== 'playing' && this.state !== 'intermission') return
@@ -377,6 +378,7 @@ export class GameScene extends Phaser.Scene {
         this.state = 'paused'
         this.firing = false
         this.overlayText.setText(`${t('paused')}\n\n${t('resume')}`).setVisible(true)
+        audio.audioContext?.suspend()
     }
     private cleanup(): void {
         this.game.events.off('tilt', this.onTilt)

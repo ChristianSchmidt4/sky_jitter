@@ -27,6 +27,9 @@ class ChiptuneAudio {
   get isEnabled(): boolean {
     return this.enabled
   }
+  get audioContext(): AudioContext | null {
+    return this.ctx
+  }
   // Must be called from a user gesture (required by iOS Safari).
   unlock(): void {
     if (!this.ctx) {
