@@ -12,6 +12,7 @@ const H = 540
 const START_LIVES = 5
 const START_MISSILES = 3
 const MISSILE_PICKUP_AMOUNT = 2
+const MAX_MISSILES = 20
 const RESPAWN_INVULN_S = 1.5
 const EXTRA_LIFE_EVERY = 5000
 const MAX_LEVEL = 50
@@ -21,6 +22,7 @@ const HINT_S = 7
 // Schutzschild: Vorstufe zum Leben. Treffer ziehen zuerst vom Schild ab.
 const PLAYER_SHIELD_MAX = 100
 const SHOT_DAMAGE = 35
+const SHAKE_THRESHOLD = 12 // Schwellwert fuer Schuetteln (Betrag der Beschleunigung minus Erdbeschleunigung)
 const ROCKET_DAMAGE = 50
 const SHIELD_HIT_INVULN_S = 0.4
 const SHIELD_PICKUP_CHANCE = 0.04
@@ -209,7 +211,7 @@ export class GameScene extends Phaser.Scene {
     }
     private onShake = (magnitude: number): void => {
         const strength = Math.abs(magnitude)
-        if (strength < 3) return
+        if (strength < SHAKE_THRESHOLD) return
         // Intensity sets the salvo size; repeated shake events add more salvos over time
         this.fireMissiles(Math.min(3, Math.floor(strength / 3)))
     }
@@ -851,7 +853,7 @@ export class GameScene extends Phaser.Scene {
             p.dead = true
             audio.sfx('pickup')
             if (p.kind === 'missile') {
-                this.missileAmmo += MISSILE_PICKUP_AMOUNT
+                this.missileAmmo = Math.min(MAX_MISSILES, this.missileAmmo + MISSILE_PICKUP_AMOUNT)
             } else if (p.kind === 'shield') {
                 this.playerShield = PLAYER_SHIELD_MAX
                 this.showMessage(t('shieldCharged'), 1400)
