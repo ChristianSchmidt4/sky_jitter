@@ -57,6 +57,13 @@ async function requestSensors(): Promise<boolean> {
     return false
   }
 }
+// Cubic non-linearity for gyro control: low inputs are more precise,
+// full range still reaches ±1.0. Maps [-1, 1] → [-1, 1] preserving sign.
+function cubicMap(v: number): number {
+  const sign = v < 0 ? -1 : 1
+  const abs = Math.abs(v)
+  return sign * (abs * abs * abs)
+}
 // In landscape, gamma is the left/right tilt; when rotated the axis moves to beta
 // Inverted gamma for intuitive left/right control, beta for forward/backward
 window.addEventListener('deviceorientation', (e: DeviceOrientationEvent) => {
@@ -65,7 +72,10 @@ window.addEventListener('deviceorientation', (e: DeviceOrientationEvent) => {
   const gamma = angle === 90 || angle === -270 ? (e.beta ?? 0) : -(e.gamma ?? 0)
   // Beta controls forward/backward movement
   const beta = angle === 90 || angle === -270 ? (e.gamma ?? 0) : (e.beta ?? 0)
-  game.events.emit('tilt', gamma, beta)
+  // Normalize to [-1, 1] range (gamma: ±90°, beta: ±180°) and apply cubic curve
+  const normalizedTilt = cubicMap(Math.max(-1, Math.min(1, gamma / 90)))
+  const normalizedPitch = cubicMap(Math.max(-1, Math.min(1, beta / 90)))
+  game.events.emit('tilt', normalizedTilt, normalizedPitch)
 })
 // Shake detection: magnitude of acceleration minus gravity, throttled
 let lastShakeEmit = 0
