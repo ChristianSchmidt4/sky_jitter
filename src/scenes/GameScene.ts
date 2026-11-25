@@ -453,12 +453,12 @@ export class GameScene extends Phaser.Scene {
     }
     private updatePlayer(dt: number): void {
         const keyX = (this.cursors?.left.isDown ? -1 : 0) + (this.cursors?.right.isDown ? 1 : 0)
-        const tiltX = Phaser.Math.Clamp(this.tilt / 22.5, -1, 1)
+        const tiltX = Phaser.Math.Clamp(this.tilt, -1, 1)
         const targetX = Phaser.Math.Clamp(keyX + tiltX, -1, 1)
         this.smoothAxisX = Phaser.Math.Linear(this.smoothAxisX, targetX, 0.12)
         this.px = Phaser.Math.Clamp(this.px + this.smoothAxisX * PLAYER_SPEED * dt, PLAYER_EDGE, W - PLAYER_EDGE)
         const keyY = (this.cursors?.down.isDown ? 1 : 0) - (this.cursors?.up.isDown ? 1 : 0)
-        const tiltY = Phaser.Math.Clamp(this.tiltY / 22.5, -1, 1)
+        const tiltY = Phaser.Math.Clamp(this.tiltY, -1, 1)
         const targetY = Phaser.Math.Clamp(keyY + tiltY, -1, 1)
         this.smoothAxisY = Phaser.Math.Linear(this.smoothAxisY, targetY, 0.12)
         this.py = Phaser.Math.Clamp(this.py + this.smoothAxisY * PLAYER_Y_SPEED * dt, PLAYER_MIN_Y, PLAYER_MAX_Y)
