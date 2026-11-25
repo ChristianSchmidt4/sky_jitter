@@ -37,6 +37,7 @@ Diese Datei (`PROMPTS.md`) dient ausschließlich der **historischen Dokumentatio
 | 21 | 2026-11-25 | Vite PWA mit Update-Banner: Service Worker-Updateerkennung und Neustart-Prompt | src/game/update-system.ts, i18n-Strings, CSS, HTML-Overlay, Version 0.3 |
 | 22 | 2026-11-25 | Screen-Sleep-Problem behoben: Wake Lock API + CSS-Animation-Fallback für iOS Safari | src/game/wake-lock.ts angelegt, CSS fallback, GameScene integration (start/pause/gameOver), Version 0.7 |
 | 23 | 2026-11-25 | Endboss Level 50: Krake mit 8 Tentakeln, gruseliger Musik, einzigartigen Angriffen, deutlich mehr HP | sprites.ts: drawEndBoss (Kopf, 8 Tentakel, rote Augen, Zähne), music.ts: END_BOSS_SONG (dissonant, verminderte Tonleiter), audio.ts: 'endBoss' Szene, GameScene: spawnBoss unterscheidet Endboss, updateEndBoss mit 8 Tentakel-Richtungen (Normal, Laser, Raketen zufällig), sanftes Wippen, Version 0.8 |
+| 24 | 2026-11-25 | Sound-Mute/Unmute-Button im HUD: entsperrt AudioContext auf iOS Safari, toggelt Musik über `audio.unlock()` + `audio.toggle()` | audio.ts: `isLocked`-Flag, `unlock()` wird zum No-Op wenn bereits entsperrt. GameScene.ts: Sound-Button rechts unten neben Autofire/Pause. i18n: sound, soundLocked, soundMuted. Version 0.9 |
 
 ---
 

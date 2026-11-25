@@ -7,7 +7,7 @@
   "gameOver": "Game Over",
   "victory": "Geschafft! Alle 50 Level bestanden",
   "restart": "Neustart",
-  "hint": "Neigen / ← → = Bewegen · ↑ ↓ = Höhe · Leertaste / Tippen = Schießen · X / Schütteln = Rakete · P = Pause · F / Dauerfeuer-Button = Dauerfeuer",
+  "hint": "Neigen / ← → = Bewegen · ↑ ↓ = Höhe · Leertaste / Tippen = Schießen · X / Schütteln = Rakete · P = Pause · F = Dauerfeuer",
   "missiles": "Raketen",
   "weapon": "Waffe",
   "weaponUp": "Waffe verbessert: Stufe {level}",
@@ -29,5 +29,8 @@
   "autofireOff": "Dauerfeuer aus",
   "updateAvailable": "Update verfügbar!",
   "updateRestart": "Neustart zum Aktualisieren",
-  "currentVersion": "Version {version}"
+  "currentVersion": "Version {version}",
+  "sound": "Sound",
+  "soundLocked": "aktiv",
+  "soundMuted": "stumm"
 }

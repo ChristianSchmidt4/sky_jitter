@@ -235,6 +235,7 @@ export class GameScene extends Phaser.Scene {
     private keyAutofire?: Phaser.Input.Keyboard.Key
     private autofire!: boolean
     private autofireText!: Phaser.GameObjects.Text
+    private soundText!: Phaser.GameObjects.Text
     private scoreText!: Phaser.GameObjects.Text
     private livesText!: Phaser.GameObjects.Text
     private shieldText!: Phaser.GameObjects.Text
@@ -269,6 +270,11 @@ export class GameScene extends Phaser.Scene {
         // Tap on the autofire button toggles continuous fire (does not start a manual shot)
         if (this.autofireText.visible && this.autofireText.getBounds().contains(pointer.x, pointer.y)) {
             this.toggleAutofire()
+            return
+        }
+        // Tap on the sound button toggles mute/unmute and unlocks audio
+        if (this.soundText.visible && this.soundText.getBounds().contains(pointer.x, pointer.y)) {
+            this.toggleSound()
             return
         }
         if (this.state === 'paused') return
@@ -450,6 +456,11 @@ export class GameScene extends Phaser.Scene {
         if (this.state !== 'playing' && this.state !== 'intermission') return
         this.autofire = !this.autofire
         this.showMessage(t(this.autofire ? 'autofireOn' : 'autofireOff'), 1200)
+    }
+    // Sound mute/unmute + audio unlock (user-gesture source for iOS Safari)
+    private toggleSound(): void {
+        audio.unlock()
+        audio.toggle()
     }
     private cleanup(): void {
         this.game.events.off('tilt', this.onTilt)
@@ -1222,6 +1233,10 @@ export class GameScene extends Phaser.Scene {
             .text(W - 16, 84, '', { ...style, fontSize: '16px' })
             .setOrigin(1, 0)
             .setDepth(30)
+        this.soundText = this.add
+            .text(W - 16, 108, '', { ...style, fontSize: '16px' })
+            .setOrigin(1, 0)
+            .setDepth(30)
         this.bossBar = this.add
             .rectangle(W / 2 - BOSS_BAR_W / 2, BOSS_BAR_Y, BOSS_BAR_W, 8, 0xff4444)
             .setOrigin(0, 0.5)
@@ -1253,6 +1268,11 @@ export class GameScene extends Phaser.Scene {
         this.autofireText.setVisible(canAct)
         this.autofireText.setText(`${t('autofire')}: ${t(this.autofire ? 'on' : 'off')}`)
         this.autofireText.setColor(this.autofire ? '#66ff99' : '#e8f7ff')
+        this.soundText.setVisible(canAct)
+        if (canAct) {
+            this.soundText.setText(`${t('sound')}: ${audio.isLocked ? (audio.isEnabled ? t('soundLocked') : t('soundMuted')) : t('soundLocked')}`)
+            this.soundText.setColor(audio.isLocked && !audio.isEnabled ? '#ff9966' : '#e8f7ff')
+        }
         const boss = this.boss
         this.bossBar.setVisible(Boolean(boss && !boss.dead))
         if (boss) this.bossBar.setScale(Phaser.Math.Clamp(boss.hp / boss.maxHp, 0, 1), 1)

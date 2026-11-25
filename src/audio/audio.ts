@@ -25,17 +25,21 @@ class ChiptuneAudio {
   private step = 0 // step within the current section (0..15)
   private nextTime = 0
   private enabled: boolean = localStorage.getItem(MUSIC_KEY) !== 'off'
+  private locked = false // has the AudioContext been unlocked yet?
   get isEnabled(): boolean {
     return this.enabled
+  }
+  get isLocked(): boolean {
+    return this.isLocked
   }
   get audioContext(): AudioContext | null {
     return this.ctx
   }
   // Must be called from a user gesture (required by iOS Safari).
-  // Also acts as a no-op-safe resume on every call (iOS allows resume
-  // whenever any user gesture fires, e.g. pointerdown when returning
-  // from background).
+  // Idempotent: safe to call every frame, only initialises once.
   unlock(): void {
+    if (this.locked) return
+    this.locked = true
     if (!this.ctx) {
       const Ctor = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
       this.ctx = new Ctor()

@@ -7,7 +7,7 @@
   "gameOver": "Game Over",
   "victory": "Victory! All 50 levels cleared",
   "restart": "Restart",
-  "hint": "Tilt / ← → = move · ↑ ↓ = height · Space / tap = shoot · X / shake = missile · P = pause · F / autofire button = autofire",
+  "hint": "Tilt / ← → = move · ↑ ↓ = height · Space / tap = shoot · X / shake = missile · P = pause · F = autofire",
   "missiles": "Missiles",
   "weapon": "Weapon",
   "weaponUp": "Weapon upgraded: level {level}",
@@ -29,5 +29,8 @@
   "autofireOff": "Autofire off",
   "updateAvailable": "Update available!",
   "updateRestart": "Restart to update",
-  "currentVersion": "Version {version}"
+  "currentVersion": "Version {version}",
+  "sound": "Sound",
+  "soundLocked": "unlocked",
+  "soundMuted": "muted"
 }

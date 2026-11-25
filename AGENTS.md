@@ -53,7 +53,8 @@ Every `git commit` MUST increment the **minor version** in `package.json`.
 - **Scene:** `src/scenes/GameScene.ts` — all game logic, input, collisions, HUD
 - **Sprites:** `src/game/sprites.ts` — procedural texture baking
 - **Weapons:** `src/game/weapons.ts` — weapon levels 1–10
-- **Audio:** `src/audio/audio.ts` + `music.ts` — Web Audio API (chiptune)
+- **Audio:** `src/audio/audio.ts` + `music.ts` — Web Audio API (chiptune), `unlock()` idempotent (safe to call repeatedly), `isLocked` tracks initial unlock state
+- **HUD Buttons:** `pause` (top-right), `autofire` (below pause), `sound` (below autofire) — sound button also serves as audio unlock source for iOS Safari
 - **i18n:** `src/i18n/` — German + English
 - **Background:** `src/game/background.ts` — parallax stars + nebula
 - **PWA Update:** `src/game/update-system.ts` — service worker update detection, banner UI
