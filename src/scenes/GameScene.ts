@@ -177,7 +177,7 @@ function parseDebugLevel(): { level: number; weaponLevel: number } {
     const params = new URLSearchParams(window.location.search)
     const lv = parseInt(params.get('level') ?? '', 10)
     if (lv >= 1 && lv <= MAX_LEVEL) {
-        const wp = Math.min(MAX_WEAPON_LEVEL, 1 + Math.floor(lv / 5))
+        const wp = Math.min(MAX_WEAPON_LEVEL, lv * 2)
         return { level: lv, weaponLevel: wp }
     }
     return { level: 1, weaponLevel: 1 }
