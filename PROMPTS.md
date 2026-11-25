@@ -37,10 +37,11 @@ tests/                  Playwright-Tests (smoke.test.ts, skyjitter.test.ts) + Sc
 ## 3. Konzept
 ### 3.1 Steuerung
 - **Bewegung:** Gerätelage (`DeviceOrientationEvent`), Neigung links/rechts bewegt das Schiff, Neigung vor/zurück die Höhe.
-- **Schießen:** Tippen/Drücken auf das Spielfeld.
+- **Schießen:** Tippen/Gedrückt-Halten auf das Spielfeld (Feuer nur, solange der Finger unten ist).
+- **Dauerfeuer:** Tippen auf den Dauerfeuer-Button im HUD bzw. Taste F schaltet kontinuierliches Schießen an/aus.
 - **Spezialschuss:** Schütteln (`DeviceMotionEvent`). Die Anzahl der abgefeuerten Raketen hängt von Intensität und Dauer des Schüttelns ab (bis zu 3 Raketen pro Schütteln).
 - **iOS:** Der Gyroskop-Zugriff muss per Button-Tap freigegeben werden (`DeviceOrientationEvent.requestPermission()`).
-- **Desktop-Fallback:** Pfeiltasten (links/rechts, hoch/runter) und Leertaste.
+- **Desktop-Fallback:** Pfeiltasten (links/rechts, hoch/runter), Leertaste (Schießen), F (Dauerfeuer), X (Raketen).
 - **Pause:** P-Taste oder Tippen auf den Pause-Button im HUD.
 - **Neustart:** R-Taste oder Tippen auf das Overlay.
 ### 3.2 Spielprinzip
@@ -54,7 +55,8 @@ tests/                  Playwright-Tests (smoke.test.ts, skyjitter.test.ts) + Sc
 ### 3.3 Level
 - **Anzahl:** 50 Level.
 - **Fortschritt:** Schwierigkeit und Dauer steigen mit jedem Level.
-- **Bosse:** Starke Zwischengegner alle 10 Level, mit eigenen Angriffsmustern.
+- **Bosse:** Starke Zwischengegner alle 5 Level (5, 10, … 50), mit eigenen Angriffsmustern: gerade Schuss-Salven, zielsuchende Boss-Raketen (alle 3,5 s) und Helfer-Gegner (alle 6 s, max. 8 gleichzeitig). Boss-HP 300 + 60 pro Level. Beim Tod werden alle Gegner und Gegner-Raketen entfernt.
+- **Gegner-Raketen:** Ab Level 1, 4, 8, 13 und 18 jeweils zähere Stufen (HP 1/2/3/4/6) mit eigener Farbe. Schutzschilde absorbieren sie.
 - **Intermission:** Kurze Pause (1,6 s) zwischen den Leveln.
 ### 3.4 Waffen & Upgrades
 - **Upgrade-Wege (beides):**
@@ -82,7 +84,7 @@ tests/                  Playwright-Tests (smoke.test.ts, skyjitter.test.ts) + Sc
 5. Code ist auf iPhone 11 (iOS Safari) zu testen: Touch, Gyroskop, Vollbild, Performance (60 FPS-Ziel).
 6. Keine Server-Abhängigkeiten. Alles läuft im Client.
 ## 5. Offene Punkte
-- Feinabstimmung Balancing (Punkte, Gegnerzahl, Boss-HP)
+- Feinabstimmung Balancing (Punkte, Gegnerzahl, Boss-HP, Gegner-HP-Wachstum)
 - Einstellungsmenü (Musik-Umschaltung, Darstellungsstile) – Musik-Toggle im Code vorhanden, UI noch offen
 - Darstellungsstile 8-Bit / Vector (noch nicht umgesetzt)
 - Umfang der Musikstücke (ein Stück pro Szene oder pro Level)
@@ -102,3 +104,4 @@ tests/                  Playwright-Tests (smoke.test.ts, skyjitter.test.ts) + Sc
 | 10 | 2026-11-24 | Waffenstufen-Details dokumentieren, HUD erweitern (Raketen-Munition, Waffenstufe, Pause-Button, Boss-HP-Balken) | Waffenstufen 1–10 mit Schüssen, Abklingzeit und Schaden dokumentiert. HUD zeigt Punkte, Leben, Schild, Level, Raketen, Waffe, Pause-Button und Boss-HP-Balken. `check:syntax` fehlerfrei |
 | 11 | 2026-11-24 | README.md und PROMPTS.md mit allen fehlenden Infos aus dem Code aktualisieren | README um Skripte, Waffenstufen-Tabelle, HUD, Technik-Details, Projektstruktur ergänzt. PROMPTS.md um aktuelle Struktur, implementierte Features und Prompt-Historie erweitert |
 | 12 | 2026-11-25 | Schutzschild-Visualisierung: Kreis um Spieler-Schiff, der mit abnehmendem Schutzschild schwächer wird; Begriff "Schild" → "Schutzschild" | GameScene.ts: shieldCircle + shieldStroke Graphics hinzugefügt, i18n aktualisiert, README/PROMPTS aktualisiert |
+| 13 | 2026-11-25 | README.md und PROMPTS.md an den aktuellen Code angleichen | Docs korrigiert: Bosse alle 5 Level, Boss-HP 300 (+60/Level), Gegner-HP +25 %/Level, Dauerfeuer (F / Button), Boss-Helfer und Boss-Raketen, Gegner-Raketen-Stufen, Schutzschilde absorbieren Gegner-Raketen, Test-Beschreibung an reale Tests angepasst |

@@ -17,8 +17,9 @@ Auf dem Gerät: Browser öffnen, „Zum Startbildschirm hinzufügen" für Vollbi
 | Aktion | Mobil | Desktop |
 |--------|-------|---------|
 | Bewegen | Gerät neigen (Gyroskop) | Pfeiltasten ← → |
-| Höhe | – | Pfeiltasten ↑ ↓ |
-| Schießen | Tippen / Leertaste | Leertaste |
+| Höhe | Gerät vor/zurück neigen | Pfeiltasten ↑ ↓ |
+| Schießen | Tippen / gedrückt halten | Leertaste |
+| Dauerfeuer | Tippen auf „Dauerfeuer"-Button (oben rechts) | F (an/aus) |
 | Rakete | Schütteln (DeviceMotion) | X |
 | Pause | P / Tippen auf „Pause" | P |
 | Neustart | Tippen auf Overlay | R |
@@ -28,7 +29,8 @@ Auf dem Gerät: Browser öffnen, „Zum Startbildschirm hinzufügen" für Vollbi
 - **Markierte Gegner** (12 % Chance) lassen **Raketen-Widgets** fallen.
 - **Waffen-Upgrades** steigen automatisch mit dem Punktestand (alle 2500 Punkte) oder durch **Waffen-Widgets**.
 - **Extraleben** alle 5000 Punkte.
-- **Bosse** alle 10 Level mit eigenen Angriffsmustern.
+- **Bosse** alle 5 Level (5, 10, … 50) mit eigenen Angriffsmustern.
+- **Dauerfeuer** (F bzw. Button) schießt, ohne die Taste gedrückt zu halten.
 - **Game Over** bei 0 Leben, **Sieg** nach allen 50 Leveln.
 - Zwischen den Leveln gibt es eine kurze **Pause (Intermission)** von 1,6 s.
 ## Elemente
@@ -36,7 +38,7 @@ Auf dem Gerät: Browser öffnen, „Zum Startbildschirm hinzufügen" für Vollbi
 - Start mit 5 Leben.
 - **Schutzschild** (0–100 %): Zieht Treffer zuerst ab (35 Schaden pro Treffer). Bei 0 % wird ein Leben abgezogen, Respawn mit 1,5 s Unverwundbarkeit. Schutzschild-Treffer geben 0,4 s Unverwundbarkeit. Visuell als Kreis um das Spieler-Schiff dargestellt, der mit abnehmendem Schutzschild schwächer wird.
 - **Waffenstufen 1–10**: Mehr Schüsse, höherer Schaden, seitliche/rückwärtige Richtungen ab Stufe 6.
-- **Raketen-Munition**: Start mit 3, Nachschub durch Widgets (+2).
+- **Raketen-Munition**: Start mit 3, Nachschub durch Widgets (+2), maximal 20.
 - Kontakt mit Gegner/Boss wirkt wie ein Treffer.
 ### Waffenstufen im Detail
 | Stufe | Schüsse | Abklingzeit | Schaden |
@@ -57,37 +59,51 @@ Auf dem Gerät: Browser öffnen, „Zum Startbildschirm hinzufügen" für Vollbi
 | enemyBug | 1 | 3 | 100 | 200 | – |
 | enemySaucer | 3 | 5 | 250 | 240 | Alle 5 s |
 | enemyFighter | 6 | 7 | 400 | 280 | Alle 3 s |
-- Gegner-Leben steigen pro Level um 12 %, Feuerrate um bis zu 50 %.
+- Gegner-Leben steigen pro Level um 25 %, Feuerrate um bis zu 50 %, Schussgeschwindigkeit um 3 pro Level.
 - Gegner tauchen zur Formationshöhe und bewegen sich dann frei im Bildschirm (Begrenzung oben/unten).
 - **Raketen** werden zielsuchend abgefeuert, Geschwindigkeit (+3/Level) und Drehrate (+0,08/Level) steigen pro Level.
 - Treffer machen Gegner transparenter (HP-Anzeige).
 ### Bosse
-- Basis-HP: 160, +30 pro Level.
-- Bewegt sich seitlich, feuert 3 gerade Schüsse und **Boss-Raketen** (zielsuchend, abschießbar).
-- Beim Tod: garantierte Schutzschild-Aufladung + Raketen-Widget.
-- 2000 Punkte, HP-Balken oben im HUD.
+- Erscheinen alle 5 Level; in Boss-Leveln gibt es keine normale Gegner-Welle.
+- HP: 300, +60 pro Level.
+- Bewegt sich seitlich und feuert Salven aus geraden Schüssen (5–9, steigt mit jedem Boss; Feuerrate steigt mit dem Level).
+- **Boss-Raketen** alle 3,5 s (3–6 Stück, zielsuchend, abschießbar).
+- **Helfer**: alle 6 s kommen 2 neue Gegner dazu (max. 8 gleichzeitig).
+- Beim Tod: 2000 Punkte, garantierte Schutzschild-Aufladung + Raketen-Widget; alle Gegner und Gegner-Raketen werden entfernt, das Level endet.
+- HP-Balken oben im HUD.
+### Gegner-Raketen
+- Werden mit steigendem Level zäher und farbiger (Stufen ab Level 1, 4, 8, 13, 18):
+
+| Ab Level | HP | Farbe |
+|----------|----|-------|
+| 1 | 1 | Orange |
+| 4 | 2 | Magenta |
+| 8 | 3 | Rot |
+| 13 | 4 | Blau |
+| 18 | 6 | Lila |
 ### Raketen (Spieler)
 - Zielsuchend, maximale Lebensdauer 3,5 s.
 - Detonation mit Kettenreaktion: überlappende Raketen explodieren ebenfalls.
-- Schaden: 3 an Gegnern/Boss, zerstört Gegner-Schüsse und Raketen.
+- Schaden: 3 an Gegnern, Boss und Gegner-Raketen; zerstört Gegner-Schüsse und Schutzschilde.
 - Start: 3 Raketen, Nachschub durch Widgets.
 - Schüttel-Intensität bestimmt die Salvo-Größe (bis zu 3 Raketen pro Schütteln).
 ### Widgets
 | Typ | Aussehen | Effekt | Drop-Chance |
 |-----|----------|--------|-------------|
 | Raketen-Widget | Grünes Diamant | +2 Raketen | 12 % (markierte Gegner) |
-| Waffen-Widget | Oranges Dreieck | +1 Waffenstufe | 3 % |
+| Waffen-Widget | Oranger Kreis mit weißem Dreieck | +1 Waffenstufe | 3 % |
 | Schutzschild-Widget | Blaues Plus | Schutzschild auf 100 % | 4 % |
 ### Neutrale Schutzschilde
-- Schweben quer durchs Bild, absorbieren Gegner-Schüsse.
+- Schweben quer durchs Bild, absorbieren Gegner-Schüsse und Gegner-Raketen.
 - 3 HP, transparent bei Beschädigung.
 - Explodieren bei Raketenkontakt.
 - Spawnen alle 9 s.
 ## HUD
 - Oben links: Punkte, Leben, Schutzschild (%).
 - Oben Mitte: Level.
-- Oben rechts: Raketen-Munition, Waffenstufe, Pause-Button.
+- Oben rechts: Raketen-Munition, Waffenstufe, Pause-Button, Dauerfeuer-Button (Anzeige an/aus).
 - Boss-HP-Balken unter der Level-Anzeige.
+- Hinweiszeile unten (wird nach 7 s ausgeblendet).
 ## Technik
 - **Phaser 4** (4.2.1) – Spiele-Framework
 - **TypeScript** – Typsicherheit (strict mode)
@@ -122,15 +138,9 @@ Für automatisierte Tests kann [Playwright](https://playwright.dev/) verwendet w
 npx playwright install chromium
 npm test
 ```
-Ein Test startet das Spiel im Headless-Modus, macht Screenshots nach festgelegten Zeitintervallen und vergleicht sie mit Referenzbildern.
+Die Konfiguration (`playwright.config.ts`) startet den Vite-Devserver automatisch (`npm run dev`, Port 5173), sofern er nicht schon läuft. Die Tests laufen im Chromium-Desktop-Profil und speichern Screenshots nach `tests/screenshots/`. Ein Vergleich mit Referenzbildern findet nicht statt.
 ### Test-Szenarien
-1. **Level-Start**: HUD zeigt korrekte Werte (Punkte, Leben, Level).
-2. **Gegner-Spawn**: Formation erscheint oben, bewegt sich seitlich.
-3. **Schuss-Abgabe**: Spieler-Schüsse fliegen in angegebener Richtung.
-4. **Raketen-Feuer**: Spieler-Rakete steuert zum nächsten Ziel.
-5. **Boss-Spawn**: Boss erscheint, feuert Raketen.
-6. **Widget-Drop**: Markierter Gegner lässt Widget fallen.
-7. **Pause**: Spiel pausiert, Overlay erscheint.
-8. **Game Over**: Bei 0 Leben, Endstand angezeigt.
+- **Smoke** (`tests/smoke.test.ts`): App lädt mit Startbildschirm; Klick auf „Start“ startet das Spiel.
+- **Screenshots** (`tests/skyjitter.test.ts`): Startbildschirm, Spielstart, Schiff, HUD, Pause/Weiter, Schießen (Leertaste gedrückt) und Raketenstart (X).
 ## Lizenz
 Eigenentwicklung, kein externer Code.
