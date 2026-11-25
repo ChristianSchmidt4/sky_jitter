@@ -96,6 +96,60 @@ function drawDouble(g: Gfx): void {
   g.fillStyle(0xff8800, 1).fillCircle(9, 26, 2).fillCircle(43, 26, 2)
 }
 // Mothership boss: wings, armor plates, cockpit dome, turrets, glowing core
+// End Boss – Kraken: bulbusser Kopf, acht Tentakel, furchterregende Augen, spitzer Mund
+function drawEndBoss(g: Gfx): void {
+  // Schatten / Aura
+  g.fillStyle(0x440066, 0.15).fillEllipse(100, 70, 210, 120)
+  // Tentakel (8 wellenförmige Linien aus kleinen Kreisen)
+  g.fillStyle(0x5522aa, 1)
+  const tentaclePaths = [
+    [[30, 80], [26, 90], [34, 100], [28, 110], [32, 120], [24, 130], [14, 140]],
+    [[45, 82], [42, 92], [50, 102], [44, 112], [48, 122], [40, 132], [32, 145]],
+    [[60, 84], [57, 94], [65, 104], [59, 114], [63, 124], [55, 134], [50, 148]],
+    [[75, 85], [73, 95], [81, 105], [75, 115], [79, 125], [72, 135], [75, 150]],
+    [[100, 85], [98, 95], [106, 105], [100, 115], [104, 125], [97, 135], [125, 150]],
+    [[125, 84], [123, 94], [131, 104], [125, 114], [129, 124], [121, 134], [150, 148]],
+    [[140, 82], [138, 92], [146, 102], [140, 112], [144, 122], [136, 132], [175, 145]],
+    [[170, 80], [168, 90], [176, 100], [170, 110], [174, 120], [166, 130], [190, 140]],
+  ]
+  for (const path of tentaclePaths) {
+    for (const [x, y] of path) {
+      g.fillCircle(x, y, 5)
+    }
+  }
+  // Kraken-Kopf (bulbus)
+  g.fillStyle(0x441188, 1).fillEllipse(100, 50, 90, 55)
+  g.lineStyle(3, 0x1a0044, 1).strokeEllipse(100, 50, 90, 55)
+  // Haut-Texturen (dunkle Flecken)
+  g.fillStyle(0x330066, 0.5).fillCircle(70, 40, 12)
+  g.fillStyle(0x330066, 0.5).fillCircle(130, 45, 10)
+  g.fillStyle(0x330066, 0.5).fillCircle(100, 30, 8)
+  // Augen (grausam, leuchtend rot)
+  g.fillStyle(0xff0022, 1).fillEllipse(78, 50, 18, 14)
+  g.fillStyle(0xff0022, 1).fillEllipse(122, 50, 18, 14)
+  // Pupillen
+  g.fillStyle(0x000000, 1).fillEllipse(78, 50, 8, 10)
+  g.fillStyle(0x000000, 1).fillEllipse(122, 50, 8, 10)
+  // Augenreflex
+  g.fillStyle(0xff6688, 0.7).fillEllipse(74, 47, 4, 4)
+  g.fillStyle(0xff6688, 0.7).fillEllipse(118, 47, 4, 4)
+  // Fangmund
+  g.fillStyle(0x220033, 1).fillEllipse(100, 66, 22, 10)
+  g.fillStyle(0xcc0033, 0.8).fillEllipse(100, 68, 16, 6)
+  // Zähne
+  g.fillStyle(0xffffff, 1)
+  for (const x of [86, 93, 100, 107, 114]) {
+    g.fillTriangle(x - 3, 62, x + 3, 62, x, 68)
+    g.fillTriangle(x - 3, 72, x + 3, 72, x, 66)
+  }
+  // Saugnäpfe an den Tentakelenden
+  g.fillStyle(0xaa44ff, 0.6)
+  const tentacleEnds = [[14, 140], [32, 145], [50, 148], [75, 150], [125, 150], [150, 148], [175, 145], [190, 140]]
+  for (const [tx, ty] of tentacleEnds) {
+    g.fillCircle(tx, ty, 4)
+  }
+}
+
 function drawBoss(g: Gfx): void {
   g.fillStyle(0xff3300, 0.18).fillEllipse(100, 58, 196, 100)
   poly(g, [[4, 58], [40, 38], [62, 78], [32, 98], [10, 90]], 0x5a1a3a, 0x1a0510, 3)
@@ -154,6 +208,7 @@ export function createTextures(scene: Phaser.Scene): void {
   bake(scene, 'enemyLaser', 52, 52, drawLaser)
   bake(scene, 'enemyDouble', 52, 52, drawDouble)
   bake(scene, 'boss', 200, 110, drawBoss)
+  bake(scene, 'endBoss', 200, 160, drawEndBoss)
   bake(scene, 'bullet', 8, 18, drawBullet)
   bake(scene, 'missile', 12, 26, drawMissile)
   bake(scene, 'eshot', 10, 16, drawEnemyShot)

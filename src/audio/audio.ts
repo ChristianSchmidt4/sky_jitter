@@ -1,6 +1,6 @@
 // 8-bit chiptune music and sound effects using the Web Audio API (no audio assets needed).
-import { LEVEL_SONG, BOSS_SONG, MENU_SONG, type Song, type Section } from './music'
-export type MusicScene = 'menu' | 'level' | 'boss'
+import { LEVEL_SONG, BOSS_SONG, END_BOSS_SONG, MENU_SONG, type Song, type Section } from './music'
+export type MusicScene = 'menu' | 'level' | 'boss' | 'endBoss'
 const MUSIC_KEY = 'skyjitter.music'
 const MUSIC_VOLUME = 0.12
 const SFX_VOLUME = 0.4
@@ -10,6 +10,7 @@ const SONGS: Record<MusicScene, Song> = {
   menu: MENU_SONG,
   level: LEVEL_SONG,
   boss: BOSS_SONG,
+  endBoss: END_BOSS_SONG,
 }
 // MIDI note number to frequency in Hz
 const hz = (midi: number): number => 440 * Math.pow(2, (midi - 69) / 12)

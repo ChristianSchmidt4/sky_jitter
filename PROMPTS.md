@@ -36,6 +36,7 @@ Diese Datei (`PROMPTS.md`) dient ausschließlich der **historischen Dokumentatio
 | 20 | 2026-11-25 | AGENTS.md erstellt – zentrale Agenten-Regeln aus PROMPTS.md extrahiert | AGENTS.md mit Versionierungsregel, Architektur-Overview, Enemy/Boss-Mechanics, iOS-Audio-Regeln. PROMPTS.md auf Prompt-Historie reduziert. |
 | 21 | 2026-11-25 | Vite PWA mit Update-Banner: Service Worker-Updateerkennung und Neustart-Prompt | src/game/update-system.ts, i18n-Strings, CSS, HTML-Overlay, Version 0.3 |
 | 22 | 2026-11-25 | Screen-Sleep-Problem behoben: Wake Lock API + CSS-Animation-Fallback für iOS Safari | src/game/wake-lock.ts angelegt, CSS fallback, GameScene integration (start/pause/gameOver), Version 0.7 |
+| 23 | 2026-11-25 | Endboss Level 50: Krake mit 8 Tentakeln, gruseliger Musik, einzigartigen Angriffen, deutlich mehr HP | sprites.ts: drawEndBoss (Kopf, 8 Tentakel, rote Augen, Zähne), music.ts: END_BOSS_SONG (dissonant, verminderte Tonleiter), audio.ts: 'endBoss' Szene, GameScene: spawnBoss unterscheidet Endboss, updateEndBoss mit 8 Tentakel-Richtungen (Normal, Laser, Raketen zufällig), sanftes Wippen, Version 0.8 |
 
 ---
 

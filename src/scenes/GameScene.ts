@@ -143,6 +143,7 @@ interface Boss extends Obj {
     hp: number
     maxHp: number
     fireTimer: number
+    kind?: 'boss' | 'endBoss'
 }
 interface Bullet extends Obj {
     damage: number
@@ -391,7 +392,11 @@ export class GameScene extends Phaser.Scene {
         this.spawned = 0
         this.spawnTimerS = 0.8
         if (isBossLevel(this.level)) {
-            audio.setScene('boss')
+            if (this.level === MAX_LEVEL) {
+                audio.setScene('endBoss')
+            } else {
+                audio.setScene('boss')
+            }
             this.spawnBoss()
             this.showMessage(t('bossWarning'), 2200)
         } else {
@@ -680,20 +685,33 @@ export class GameScene extends Phaser.Scene {
     }
     private spawnBoss(): void {
         const index = Math.floor(this.level / BOSS_EVERY)
-        const hp = BOSS_BASE_HP + this.level * BOSS_HP_PER_LEVEL
+        const isEndBoss = this.level === MAX_LEVEL
+        const hp = isEndBoss
+            ? 2000 + this.level * 200
+            : BOSS_BASE_HP + this.level * BOSS_HP_PER_LEVEL
         const boss: Boss = {
-            ...this.makeObj('boss', W / 2, BOSS_Y, 110 + index * 4, 0, BOSS_RADIUS, 5),
+            ...this.makeObj(isEndBoss ? 'endBoss' : 'boss', W / 2, BOSS_Y, 110 + index * 4, 0, BOSS_RADIUS, 5),
             hp,
             maxHp: hp,
             fireTimer: 1.2,
+            kind: isEndBoss ? 'endBoss' : 'boss',
         }
         // Stärkere Bosse: intensivere Farbe und größer
-        const tint = BOSS_COLORS[Math.min(index, BOSS_COLORS.length - 1)]
-        boss.img.setTint(tint)
-        boss.img.setScale(1 + index * 0.04) // +4% Größe pro Boss-Level
+        if (!isEndBoss) {
+            const tint = BOSS_COLORS[Math.min(index, BOSS_COLORS.length - 1)]
+            boss.img.setTint(tint)
+            boss.img.setScale(1 + index * 0.04) // +4% Größe pro Boss-Level
+        } else {
+            boss.img.setTint(0x8822cc) // lila-graue Krakenfarbe
+            boss.img.setScale(1.2) // größer als Normalbosse
+        }
         this.boss = boss
         this.bossRocketTimerS = BOSS_ROCKET_EVERY_S
         this.bossHelperTimerS = BOSS_HELPER_EVERY_S
+        // End Boss: gruselige Musik
+        if (isEndBoss) {
+            audio.setScene('endBoss')
+        }
     }
     private updateWaves(dt: number): void {
         if (this.state !== 'playing') return
@@ -769,9 +787,20 @@ export class GameScene extends Phaser.Scene {
             boss.vx = -boss.vx
             boss.x = Phaser.Math.Clamp(boss.x, BOSS_EDGE, W - BOSS_EDGE)
         }
+        // End Boss: sanftes Wippen der Tentakel
+        if (boss.kind === 'endBoss') {
+            const bob = Math.sin(this.clockMs / 600) * 8
+            boss.y = BOSS_Y + bob
+        }
         boss.img.setPosition(boss.x, boss.y)
         if (this.state !== 'playing') return
         const index = Math.floor(this.level / BOSS_EVERY)
+        const isEnd = boss.kind === 'endBoss'
+        // End Boss: 8 Richtungen aus allen Tentakeln
+        if (isEnd) {
+            this.updateEndBoss(dt, boss, index)
+            return
+        }
         // Angriffs-Konfiguration pro Boss-Level: Schussmuster + Feuerrate
         const hasDiag = index >= 2    // ab Boss 3: diagonale Schüsse (40°/140°)
         const hasSide = index >= 4    // ab Boss 5: seitliche Schüsse (45°/135°)
@@ -818,6 +847,59 @@ export class GameScene extends Phaser.Scene {
             }
         }
         // Helfer kommen weiter
+        this.bossHelperTimerS -= dt
+        if (this.bossHelperTimerS <= 0) {
+            this.bossHelperTimerS = BOSS_HELPER_EVERY_S
+            this.spawnHelpers(boss)
+        }
+    }
+    // End Boss (Krake): 8 Tentakel schießen abwechselnd normale Schüsse,
+    // zielgerichtete Laser und zielsuchende Raketen in zufälligen Richtungen
+    private updateEndBoss(dt: number, boss: Boss, _index: number): void {
+        const dirs = [0, 30, 60, 90, 120, 150, 180, 210] // 8 Tentakel-Richtungen (Grad)
+        // Jede Sekunde feuert ein neuer Tentakel
+        boss.fireTimer -= dt
+        if (boss.fireTimer <= 0) {
+            const idx = Math.floor(Math.random() * dirs.length)
+            const angleDeg = dirs[idx]
+            const speed = 220 + this.level * 6
+            const roll = Math.random()
+            // Zufällig: 0-45 = Normaler Schuss, 45-75 = Laser (auf Spieler), 75-100 = Rakete
+            if (roll < 0.45) {
+                // Normaler Schuss aus Tentakel-Richtung
+                this.fireAngledShot(boss.x, boss.y + 50, speed, angleDeg)
+            } else if (roll < 0.75) {
+                // Zielgerichteter Laser (wie enemyLaser)
+                const laserAngle = Phaser.Math.DegToRad(
+                    Phaser.Math.RadToDeg(Math.atan2(this.px - boss.x, this.py - boss.y))
+                )
+                const laserSpeed = 260 + this.level * 5
+                for (let i = -1; i <= 1; i++) {
+                    const a = laserAngle + i * 0.12
+                    this.shots.push({
+                        ...this.makeObj('eshot', boss.x, boss.y + 50, Math.cos(a) * laserSpeed, Math.sin(a) * laserSpeed, SHOT_RADIUS, 6),
+                        x: boss.x, y: boss.y + 50, vx: Math.cos(a) * laserSpeed, vy: Math.sin(a) * laserSpeed, radius: SHOT_RADIUS,
+                        dead: false,
+                    })
+                }
+                audio.sfx('hit')
+            } else {
+                // Zielsuchende Rakete
+                this.spawnEnemyRocket(boss.x, boss.y + 50, BOSS_ROCKET_SPEED + this.level * ENEMY_ROCKET_SPEED_PER_LEVEL * 1.5, BOSS_ROCKET_TURN + this.level * ENEMY_ROCKET_TURN_PER_LEVEL * 1.2, BOSS_ROCKET_LIFE_S, BOSS_ROCKET_RADIUS)
+            }
+            boss.fireTimer = 0.35 + Math.random() * 0.2 // ca. 3-5 Schüsse/s gesamt
+        }
+        // End Boss feuert häufiger Raketen
+        this.bossRocketTimerS -= dt
+        if (this.bossRocketTimerS <= 0) {
+            this.bossRocketTimerS = BOSS_ROCKET_EVERY_S * 0.6
+            const rCount = Math.min(10, 3 + Math.floor(this.level / 5))
+            for (let i = 0; i < rCount; i++) {
+                const dx = (i - (rCount - 1) / 2) * 35
+                this.spawnEnemyRocket(boss.x + dx, boss.y + 60, BOSS_ROCKET_SPEED * 1.2, BOSS_ROCKET_TURN, BOSS_ROCKET_LIFE_S, BOSS_ROCKET_RADIUS)
+            }
+        }
+        // Helfer (gleicher Mechanismus wie Normalbosse)
         this.bossHelperTimerS -= dt
         if (this.bossHelperTimerS <= 0) {
             this.bossHelperTimerS = BOSS_HELPER_EVERY_S

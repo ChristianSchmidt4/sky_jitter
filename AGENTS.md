@@ -89,6 +89,20 @@ Every `git commit` MUST increment the **minor version** in `package.json`.
 | `enemyLaser` | 8 | 5 | 300 | **Tracking laser** (3 shots toward player) |
 | `enemyDouble` | 14 | 9 | 500 | **Double-barrel** (2 parallel shots, offset left/right) |
 
+### End Boss (Level 50)
+
+- Spawn: Kraken (octopus), animated with gentle bobbing
+- HP: `2000 + 200 × level` (~12 000 HP)
+- Sprite: `endBoss` – purple body, 8 wavy tentacles, glowing red eyes, fangs
+- Music: `END_BOSS_SONG` – dissonant, eerie (diminished scale, slow tempo)
+- Attack: All 8 tentacles fire continuously at ~3–5 shots/s:
+  - 45 % normal angled shots
+  - 30 % tracking lasers (3 aimed shots at player)
+  - 25 % homing rockets
+  - Plus additional boss rockets every ~2 s
+- Helpers: Same as other bosses (2 every 6 s, max 8)
+- Death: Clears all enemies/rockets, drops shield + missile widget, 2000 pts
+
 **Difficulty scaling:** HP +35%/level, fire rate +55%, shot speed +3/level.
 **Enemy tint:** white → yellow → orange → red → purple → white-hot by level.
 
