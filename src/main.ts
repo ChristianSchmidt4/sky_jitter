@@ -4,6 +4,7 @@ import { GameScene } from './scenes/GameScene'
 import { t } from './i18n'
 import { audio } from './audio/audio'
 import { updateManager } from './game/update-system'
+import { wakeLockOn, onVisibilityChange } from './game/wake-lock'
 const BASE_WIDTH = 960
 const BASE_HEIGHT = 540
 function requireEl<T extends HTMLElement>(id: string): T {
@@ -95,7 +96,10 @@ window.addEventListener('devicemotion', (e: DeviceMotionEvent) => {
 startButton.addEventListener('click', () => {
   audio.unlock() // audio must be unlocked inside the user gesture
   audio.setScene('level')
+  wakeLockOn() // prevent screen sleep during gameplay
   void requestSensors().then(() => startOverlay.classList.add('hidden'))
 })
+// Re-acquire wake lock when the tab becomes visible again
+document.addEventListener('visibilitychange', onVisibilityChange)
 // Register the PWA update manager – shows a banner when a new version is available
 updateManager.register()

@@ -94,3 +94,20 @@ body {
     transform: translateY(0);
   }
 }
+/* Wake Lock fallback for browsers without navigator.wakeLock (e.g. iOS Safari) */
+#wake-lock-fallback {
+  position: fixed;
+  inset: 0;
+  width: 1px;
+  height: 1px;
+  z-index: -1;
+  animation: wakeLockPreventSleep 60s linear infinite;
+}
+@keyframes wakeLockPreventSleep {
+  from {
+    clip-path: circle(0px at 50% 50%);
+  }
+  to {
+    clip-path: circle(99999px at 50% 50%);
+  }
+}

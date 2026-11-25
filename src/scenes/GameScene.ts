@@ -7,6 +7,7 @@ import { Background } from '../game/background'
 import { weaponSpec, MAX_WEAPON_LEVEL, WEAPON_UPGRADE_POINTS } from '../game/weapons'
 import { audio } from '../audio/audio'
 import { t } from '../i18n'
+import { wakeLockOn, wakeLockOff } from '../game/wake-lock'
 const W = 960
 const H = 540
 const START_LIVES = 5
@@ -383,6 +384,7 @@ export class GameScene extends Phaser.Scene {
         return isBossLevel(this.level) ? 0 : 8 + this.level * 2
     }
     private startLevel(): void {
+        wakeLockOn() // keep screen on during gameplay
         this.state = 'playing'
         this.spawned = 0
         this.spawnTimerS = 0.8
@@ -413,6 +415,7 @@ export class GameScene extends Phaser.Scene {
         this.state = result
         this.firing = false
         this.pauseText.setVisible(false)
+        wakeLockOff() // game over / won — allow screen to sleep
         const head = result === 'won' ? t('victory') : t('gameOver')
         this.overlayText.setText(`${head}\n${t('finalScore', { score: this.score })}\n\n${t('restart')}`)
         this.overlayText.setVisible(true)
@@ -422,6 +425,7 @@ export class GameScene extends Phaser.Scene {
         if (this.state === 'paused') {
             this.state = this.pausedFrom
             this.overlayText.setVisible(false)
+            wakeLockOn() // resuming gameplay — keep screen on
             audio.audioContext?.resume()
             return
         }
@@ -430,6 +434,7 @@ export class GameScene extends Phaser.Scene {
         this.state = 'paused'
         this.firing = false
         this.overlayText.setText(`${t('paused')}\n\n${t('resume')}`).setVisible(true)
+        wakeLockOff() // paused — allow screen to sleep
         audio.audioContext?.suspend()
     }
     // Dauerfeuer: schießt ohne gedrückte Taste/Berührung durchgehend

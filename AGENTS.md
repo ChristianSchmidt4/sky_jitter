@@ -57,6 +57,7 @@ Every `git commit` MUST increment the **minor version** in `package.json`.
 - **i18n:** `src/i18n/` — German + English
 - **Background:** `src/game/background.ts` — parallax stars + nebula
 - **PWA Update:** `src/game/update-system.ts` — service worker update detection, banner UI
+- **Wake Lock:** `src/game/wake-lock.ts` — prevents screen sleeping during gameplay (Wake Lock API + CSS fallback)
 
 ---
 
@@ -153,5 +154,12 @@ The project uses **Vite PWA plugin** (`vite-plugin-pwa`) configured in `vite.con
 - PWA icons must be in `public/icons/` (apple-touch-icon.png, maskable-512.png, icon-512.png)
 - `display: 'standalone'` in manifest makes the app launch full-screen
 - `orientation: 'landscape'` locks to landscape mode
+
+### Screen wake lock (prevent screen sleeping)
+- `src/game/wake-lock.ts` — `Wake Lock API` for Chrome/Edge/Android, CSS animation fallback for Safari
+- `wakeLockOn()` called on game start and when un-pausing; `wakeLockOff()` on game over / pause / tab hidden
+- The CSS fallback (`#wake-lock-fallback`) is a hidden element that continuously animates, which tricks iOS Safari into keeping the screen alive
+- iOS Safari does not support `navigator.wakeLock` — the CSS animation is the only reliable way to prevent sleep on iOS
+- When the tab becomes hidden, both the Wake Lock and the CSS fallback are released to save battery
 
 ---
