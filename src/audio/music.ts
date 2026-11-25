@@ -92,7 +92,7 @@ export const END_BOSS_SONG: Song = {
       'Bb1 - Bb1 - F1 - F1 - Bb1 - Bb1 - F1 - F1 -',
     ),
     B: sec(
-      'F5 - - Bb4 - - Eb5 - - C5 - F5 - - Bb4 - - Eb5 -',
+      'F5 - - Bb4 - - Eb5 - - C5 - F5 - - Bb4 -',
       'Bb1 - F1 - Bb1 - F1 - Bb1 - F1 - Bb1 - F1 -',
     ),
     C: sec(
