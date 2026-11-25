@@ -254,6 +254,8 @@ export class GameScene extends Phaser.Scene {
         this.fireMissiles(Math.min(3, Math.floor(strength / 3)))
     }
     private onPointerDown = (pointer: Phaser.Input.Pointer): void => {
+        // Always unlock audio on tap (required on iOS Safari after returning from background)
+        audio.unlock()
         // Tap on the pause button toggles pause (works in both directions)
         if (this.pauseText.visible && this.pauseText.getBounds().contains(pointer.x, pointer.y)) {
             this.togglePause()

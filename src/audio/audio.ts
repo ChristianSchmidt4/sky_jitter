@@ -31,6 +31,9 @@ class ChiptuneAudio {
     return this.ctx
   }
   // Must be called from a user gesture (required by iOS Safari).
+  // Also acts as a no-op-safe resume on every call (iOS allows resume
+  // whenever any user gesture fires, e.g. pointerdown when returning
+  // from background).
   unlock(): void {
     if (!this.ctx) {
       const Ctor = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
@@ -42,7 +45,11 @@ class ChiptuneAudio {
       this.sfxBus.gain.value = SFX_VOLUME
       this.sfxBus.connect(this.ctx.destination)
     }
-    if (this.ctx.state === 'suspended') void this.ctx.resume()
+    if (this.ctx.state === 'suspended') {
+      // resume() must be inside a user-gesture on iOS Safari.
+      // The caller (pointerdown handler, button click, etc.) provides the gesture.
+      void this.ctx.resume()
+    }
     if (this.timer === null) {
       this.nextTime = this.ctx.currentTime + 0.05
       this.timer = window.setInterval(() => this.schedule(), TICK_MS)
