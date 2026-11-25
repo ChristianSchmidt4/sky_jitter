@@ -48,3 +48,8 @@ body {
   font-size: 1.4rem;
   color: #ff0;
 }
+.version-text {
+  margin-top: 24px;
+  font-size: 0.9rem;
+  color: #555;
+}

@@ -1,10 +1,18 @@
+import { readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
+import { dirname, resolve } from 'node:path'
 import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
+const __dirname = dirname(fileURLToPath(import.meta.url))
+const pkg = JSON.parse(readFileSync(resolve(__dirname, 'package.json'), 'utf8'))
 export default defineConfig(({ mode }) => {
   const isGithubPages = mode === 'github-pages'
   const base = isGithubPages ? '/sky_jitter/' : '/'
   return {
     base,
+    define: {
+      __APP_VERSION__: JSON.stringify(pkg.version),
+    },
     plugins: [
       VitePWA({
         registerType: 'autoUpdate',

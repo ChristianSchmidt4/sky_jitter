@@ -13,8 +13,10 @@ function requireEl<T extends HTMLElement>(id: string): T {
 const startOverlay = requireEl<HTMLDivElement>('start-overlay')
 const startButton = requireEl<HTMLButtonElement>('start-button')
 const rotateHint = requireEl<HTMLDivElement>('rotate-hint')
+const versionText = requireEl<HTMLDivElement>('version-text')
 startButton.textContent = t('start')
 rotateHint.textContent = t('rotateHint')
+versionText.textContent = `v${__APP_VERSION__}`
 const game = new Phaser.Game({
   type: Phaser.AUTO,
   parent: 'game-root',
