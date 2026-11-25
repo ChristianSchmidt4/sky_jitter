@@ -100,8 +100,8 @@ export const END_BOSS_SONG: Song = {
       'D1 - D1 - A1 - A1 - D1 - D1 - A1 - A1 -',
     ),
     Bridge: sec(
-      'Bb4 - - Db5 - - F5 - - Bb5 - Bb4 - - Db5 - - F5 -',
-      'Bb1 - F1 - Bb1 - F1 - Bb1 - F1 - Bb1 - F1 -',
+      'Bb4 - Db5 - F5 - Bb5 - Eb5 - Gb5 - Bb4 - - -',
+      'Bb1 - Bb1 - F1 - F1 - Bb1 - Bb1 - Eb1 - Eb1 -',
     ),
   },
   arrangement: ['A', 'A', 'B', 'A', 'Bridge', 'C', 'B', 'A', 'Bridge', 'C', 'A', 'B'],
