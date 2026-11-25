@@ -95,7 +95,7 @@ const MISSILE_SPREAD = 60
 const SHIELD_EVERY_S = 9
 const SHIELD_HP = 3
 const SHIELD_RADIUS = 30
-type EnemyKind = 'enemyBug' | 'enemySaucer' | 'enemyFighter'
+type EnemyKind = 'enemyBug' | 'enemySaucer' | 'enemyFighter' | 'enemyLaser' | 'enemyDouble'
 interface EnemyStats {
     hp: number
     points: number
@@ -104,11 +104,15 @@ interface EnemyStats {
     radius: number
     minLevel: number
     rocketEvery: number // seconds between homing rockets, 0 = none
+    laserTargeting?: boolean // tracks player for aiming
+    doubleBarrel?: boolean // fires two spread shots
 }
 const ENEMY_STATS: Record<EnemyKind, EnemyStats> = {
     enemyBug: { hp: 3, points: 100, fireEvery: 2.6, shotSpeed: 200, radius: 22, minLevel: 1, rocketEvery: 0 },
     enemySaucer: { hp: 5, points: 250, fireEvery: 2.0, shotSpeed: 240, radius: 24, minLevel: 3, rocketEvery: 5 },
     enemyFighter: { hp: 7, points: 400, fireEvery: 1.5, shotSpeed: 280, radius: 26, minLevel: 6, rocketEvery: 3 },
+    enemyLaser: { hp: 5, points: 300, fireEvery: 2.2, shotSpeed: 320, radius: 24, minLevel: 8, rocketEvery: 0, laserTargeting: true },
+    enemyDouble: { hp: 9, points: 500, fireEvery: 2.8, shotSpeed: 300, radius: 30, minLevel: 14, rocketEvery: 0, doubleBarrel: true },
 }
 type State = 'playing' | 'intermission' | 'paused' | 'over' | 'won'
 interface Circle {
@@ -702,7 +706,28 @@ export class GameScene extends Phaser.Scene {
             e.fireTimer -= dt
             if (e.fireTimer <= 0 && this.state === 'playing' && e.y > 0) {
                 const stats = ENEMY_STATS[e.kind]
-                this.fireShot(e.x, e.y + e.radius, stats.shotSpeed + this.level * 3)
+                const speed = stats.shotSpeed + this.level * 3
+                // Tracking-Laser-Gegner: schießt zielgerichtet auf den Spieler
+                if (stats.laserTargeting) {
+                    const angle = Phaser.Math.DegToRad(Phaser.Math.RadToDeg(Math.atan2(this.px - e.x, this.py - e.y)))
+                    for (let i = -1; i <= 1; i++) {
+                        const a = angle + i * 0.12 // leichte Streuung
+                        this.shots.push({
+                            ...this.makeObj('eshot', e.x, e.y + e.radius, Math.cos(a) * speed, Math.sin(a) * speed, SHOT_RADIUS, 6),
+                            x: e.x, y: e.y + e.radius, vx: Math.cos(a) * speed, vy: Math.sin(a) * speed, radius: SHOT_RADIUS,
+                            dead: false,
+                        })
+                    }
+                }
+                // Doppelläufiger Cannon: zwei parallele Schüsse seitlich versetzt
+                else if (stats.doubleBarrel) {
+                    this.shots.push(this.makeObj('eshot', e.x - 12, e.y + e.radius, 0, speed, SHOT_RADIUS, 6))
+                    this.shots.push(this.makeObj('eshot', e.x + 12, e.y + e.radius, 0, speed, SHOT_RADIUS, 6))
+                }
+                // Standard-Schuss
+                else {
+                    this.fireShot(e.x, e.y + e.radius, speed)
+                }
                 e.fireTimer = this.fireDelay(stats.fireEvery)
             }
             e.rocketTimer -= dt
@@ -724,8 +749,8 @@ export class GameScene extends Phaser.Scene {
         if (this.state !== 'playing') return
         const index = Math.floor(this.level / BOSS_EVERY)
         // Angriffs-Konfiguration pro Boss-Level: Schussmuster + Feuerrate
-        const hasDiag = index >= 2    // ab Boss 3: diagonale Schüsse
-        const hasSide = index >= 4    // ab Boss 5: seitliche Schüsse
+        const hasDiag = index >= 2    // ab Boss 3: diagonale Schüsse (40°/140°)
+        const hasSide = index >= 4    // ab Boss 5: seitliche Schüsse (45°/135°)
         const allDir  = index >= 8    // ab Boss 9: alle Richtungen
         const count = Math.min(15, 3 + index * 2) // mehr Schüsse pro Salve
         boss.fireTimer -= dt
@@ -736,23 +761,24 @@ export class GameScene extends Phaser.Scene {
                 const dx = (i - (baseCount - 1) / 2) * 30
                 this.fireShot(boss.x + dx, boss.y + 50, 230 + this.level * 5)
             }
-            // Diagonal
+            // Diagonal nach unten (Winkel: 40° = rechts-unten, 140° = links-unten)
             if (hasDiag) {
                 const diagCount = allDir ? 2 : 1
                 for (let i = 0; i < diagCount; i++) {
                     const y = 20 + i * 30
-                    this.fireAngledShot(boss.x - 70, boss.y + y, 200 + this.level * 3, allDir ? -55 : -40)
-                    this.fireAngledShot(boss.x + 70, boss.y + y, 200 + this.level * 3, allDir ? 55 : 40)
+                    const right = 40 * (allDir ? 1 : 1)
+                    const left = 180 - right // 140°
+                    this.fireAngledShot(boss.x - 70, boss.y + y, 200 + this.level * 3, left + i * 10)
+                    this.fireAngledShot(boss.x + 70, boss.y + y, 200 + this.level * 3, right - i * 10)
                 }
             }
-            // Seitlich
+            // Seitlich nach unten (Winkel: 45°/135°)
             if (hasSide) {
                 const sideCount = allDir ? 2 : 1
                 for (let i = 0; i < sideCount; i++) {
                     const y = 15 + i * 35
-                    const dir = -90 + i * 20 // -90 bis -70
-                    this.fireAngledShot(boss.x - 95, boss.y + y, 180 + this.level * 3, dir)
-                    this.fireAngledShot(boss.x + 95, boss.y + y, 180 + this.level * 3, 90 - i * 20)
+                    this.fireAngledShot(boss.x - 95, boss.y + y, 180 + this.level * 3, 135 - i * 15)
+                    this.fireAngledShot(boss.x + 95, boss.y + y, 180 + this.level * 3, 45 + i * 15)
                 }
             }
             boss.fireTimer = Math.max(0.45, 1.3 - this.level * 0.015)
@@ -802,7 +828,6 @@ export class GameScene extends Phaser.Scene {
         }
         // Stufe des Raketentyps + Farbskalierung nach Level
         r.img.setTint(tier.tint)
-        if (this.level > 15) r.img.setTintAt(2, 0xffffff) // weiße Hitze bei hohem Level
         this.enemyRockets.push(r)
     }
     private damageRocket(r: EnemyRocket, dmg: number): void {
@@ -815,7 +840,7 @@ export class GameScene extends Phaser.Scene {
     private fireShot(x: number, y: number, speed: number, radius: number = SHOT_RADIUS): void {
         this.shots.push(this.makeObj('eshot', x, y, 0, speed, radius, 6))
     }
-    // Diagonale/schräge Schüsse (Winkel in Grad: 0=runter, -90=links, 90=rechts, -45=links-unten)
+    // Diagonale/schräge Schüsse (Winkel in Grad: 0=rechts, 90=unten, 180=links)
     private fireAngledShot(x: number, y: number, speed: number, angleDeg: number): void {
         const rad = Phaser.Math.DegToRad(angleDeg)
         this.shots.push({
@@ -824,6 +849,7 @@ export class GameScene extends Phaser.Scene {
             dead: false,
         })
     }
+    // Auf den Spieler ausgerichteter Laserstrahl (intern für Spezial-Gegner)
     private damageEnemy(e: Enemy, dmg: number): void {
         if (e.dead) return
         e.hp -= dmg

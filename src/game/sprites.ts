@@ -73,6 +73,28 @@ function drawFighter(g: Gfx): void {
   g.fillStyle(0x111111, 1).fillCircle(26, 26, 1.5)
   g.fillStyle(0xffcc00, 1).fillCircle(2, 14, 2).fillCircle(50, 14, 2)
 }
+// Laser enemy: diamond body, glowing red visor, target crosshair on underside
+function drawLaser(g: Gfx): void {
+  g.fillStyle(0xff2244, 1).fillEllipse(26, 26, 14, 14)
+  poly(g, [[26, 0], [44, 26], [26, 52], [8, 26]], 0x880022, 0x3a0010, 2)
+  g.lineStyle(1, 0x3a0010, 0.8).lineBetween(26, 6, 26, 46)
+  g.lineStyle(1, 0x3a0010, 0.8).lineBetween(12, 26, 40, 26)
+  g.fillStyle(0xff4488, 0.9).fillEllipse(26, 26, 12, 12)
+  g.fillStyle(0xff0044, 1).fillEllipse(26, 26, 7, 7)
+  g.fillStyle(0xffffff, 0.7).fillEllipse(22, 22, 4, 3)
+  g.fillStyle(0xff6644, 0.3).fillCircle(26, 36, 8)
+  g.fillStyle(0xff8866, 0.5).fillCircle(26, 38, 3)
+}
+// Double-barrel cannon: wide body, twin cannons, heavy armor plates
+function drawDouble(g: Gfx): void {
+  poly(g, [[8, 6], [44, 6], [50, 26], [44, 46], [8, 46], [2, 26]], 0x8a4400, 0x3a2000, 3)
+  poly(g, [[12, 12], [40, 12], [44, 26], [40, 40], [12, 40], [8, 26]], 0xcc6622, 0x3a2000, 2)
+  g.lineStyle(2, 0x3a2000, 1).lineBetween(12, 20, 40, 20).lineBetween(12, 32, 40, 32)
+  g.fillStyle(0xffcc44, 1).fillCircle(26, 26, 5)
+  g.fillStyle(0xffff88, 0.6).fillCircle(26, 26, 3)
+  g.fillStyle(0xffaa22, 1).fillRect(6, 20, 6, 12).fillRect(40, 20, 6, 12)
+  g.fillStyle(0xff8800, 1).fillCircle(9, 26, 2).fillCircle(43, 26, 2)
+}
 // Mothership boss: wings, armor plates, cockpit dome, turrets, glowing core
 function drawBoss(g: Gfx): void {
   g.fillStyle(0xff3300, 0.18).fillEllipse(100, 58, 196, 100)
@@ -119,6 +141,8 @@ export function createTextures(scene: Phaser.Scene): void {
   bake(scene, 'enemyBug', 48, 44, drawBug)
   bake(scene, 'enemySaucer', 52, 40, drawSaucer)
   bake(scene, 'enemyFighter', 52, 52, drawFighter)
+  bake(scene, 'enemyLaser', 52, 52, drawLaser)
+  bake(scene, 'enemyDouble', 52, 52, drawDouble)
   bake(scene, 'boss', 200, 110, drawBoss)
   bake(scene, 'bullet', 8, 18, drawBullet)
   bake(scene, 'missile', 12, 26, drawMissile)

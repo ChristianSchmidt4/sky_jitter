@@ -59,11 +59,16 @@ Auf dem Gerät: Browser öffnen, „Zum Startbildschirm hinzufügen" für Vollbi
 | enemyBug | 1 | 3 | 100 | 200 | – |
 | enemySaucer | 3 | 5 | 250 | 240 | Alle 5 s |
 | enemyFighter | 6 | 7 | 400 | 280 | Alle 3 s |
+| enemyLaser | 8 | 5 | 300 | 320 | – (Ziellaser) |
+| enemyDouble | 14 | 9 | 500 | 300 | – (Doppellaser) |
 - Gegner-Leben steigen pro Level um 35 %, Feuerrate um bis zu 55 %, Schussgeschwindigkeit um 3 pro Level.
 - Gegner tauchen zur Formationshöhe und bewegen sich dann frei im Bildschirm (Begrenzung oben/unten).
 - **Raketen** werden zielsuchend abgefeuert, Geschwindigkeit (+3/Level) und Drehrate (+0,08/Level) steigen pro Level.
 - Treffer machen Gegner transparenter (HP-Anzeige).
 - **Gegner-Farbe** wird mit steigendem Level aggressiver: ab Level 5 gelblich, ab 18 orange, ab 28 rot, ab 40 lila, ab 45 weiß-hot.
+### Spezial-Gegner
+- **enemyLaser** (ab Level 8): Diamantförmiger Gegner mit rotem Visier. Schießt **zielgerichtet auf den Spieler** (3 Schüsse mit leichter Streuung). Kadenz steigt mit Level: Basis 2,2 s, skaliert auf ~0,9 s bei Level 50.
+- **enemyDouble** (ab Level 14): Breiter Kanonengegner mit Doppelläufigen Lasern. Feuert **zwei parallele Schüsse** seitlich versetzt ab. Höhere HP (9), Kadenz skaliert von 2,8 s auf ~1,2 s.
 ### Bosse
 - Erscheinen alle 5 Level; in Boss-Leveln gibt es keine normale Gegner-Welle.
 - HP: 300, +80 pro Level.
