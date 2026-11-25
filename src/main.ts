@@ -3,7 +3,6 @@ import Phaser from 'phaser'
 import { GameScene } from './scenes/GameScene'
 import { t } from './i18n'
 import { audio } from './audio/audio'
-import { updateManager } from './game/update-system'
 import { wakeLockOn, onVisibilityChange } from './game/wake-lock'
 const BASE_WIDTH = 960
 const BASE_HEIGHT = 540
