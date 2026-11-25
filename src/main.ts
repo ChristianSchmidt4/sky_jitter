@@ -94,3 +94,6 @@ startButton.addEventListener('click', () => {
   audio.setScene('level')
   void requestSensors().then(() => startOverlay.classList.add('hidden'))
 })
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') audio.unlock()
+})
