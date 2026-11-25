@@ -16,7 +16,7 @@ const MAX_MISSILES = 20
 const RESPAWN_INVULN_S = 1.5
 const EXTRA_LIFE_EVERY = 5000
 const MAX_LEVEL = 50
-const BOSS_EVERY = 10
+const BOSS_EVERY = 5
 const INTERMISSION_S = 1.6
 const HINT_S = 7
 // Schutzschild: Vorstufe zum Leben. Treffer ziehen zuerst vom Schild ab.
@@ -37,7 +37,7 @@ const BULLET_SPEED = 620
 const BULLET_RADIUS = 8
 const SHOT_RADIUS = 5
 const ENEMY_DIVE_SPEED = 140
-const ENEMY_HP_GROWTH = 0.12 // Gegner-Leben steigt pro Level um diesen Anteil
+const ENEMY_HP_GROWTH = 0.25 // Gegner-Leben steigt pro Level um diesen Anteil
 const ENEMY_FIRE_SPEEDUP = 0.012 // Feuerrate steigt pro Level (max. 50 %)
 const ENEMY_HOME_MAX_Y = H * 0.6 // Formationen liegen maximal in diesem Bereich
 const ENEMY_DRIFT_BASE = 40 // Grundgeschwindigkeit der freien Gegnerbewegung (px/s)
@@ -57,13 +57,24 @@ const PICKUP_FALL_SPEED = 90
 const BOSS_RADIUS = 60
 const BOSS_EDGE = 110
 const BOSS_Y = 120
-const BOSS_BASE_HP = 160
-const BOSS_HP_PER_LEVEL = 30
+const BOSS_BASE_HP = 300
+const BOSS_HP_PER_LEVEL = 60
+const BOSS_HELPER_EVERY_S = 6 // Boss schickt laufend neue Helfer
+const BOSS_HELPER_COUNT = 2
+const BOSS_HELPER_MAX = 8 // max. gleichzeitig lebende Helfer
 const BOSS_ROCKET_EVERY_S = 3.5
 const BOSS_ROCKET_SPEED = 150
 const BOSS_ROCKET_TURN = 1.6 // radians per second
 const BOSS_ROCKET_LIFE_S = 6
 const BOSS_ROCKET_RADIUS = 10
+// Raketen werden mit steigendem Level zaeher und bekommen eine andere Farbe
+const ROCKET_TIERS: { minLevel: number; hp: number; tint: number }[] = [
+    { minLevel: 1, hp: 1, tint: 0xffaa55 }, // orange
+    { minLevel: 4, hp: 2, tint: 0xff55ff }, // magenta
+    { minLevel: 8, hp: 3, tint: 0xff3333 }, // rot
+    { minLevel: 13, hp: 4, tint: 0x3399ff }, // blau
+    { minLevel: 18, hp: 6, tint: 0xaa55ff }, // lila
+]
 const BOSS_BAR_W = 320
 const BOSS_BAR_Y = 52
 const MISSILE_SPEED = 380
@@ -129,6 +140,8 @@ interface EnemyRocket extends Obj {
     speed: number
     turn: number // radians per second
     lifeS: number
+    hp: number
+    tint: number
 }
 interface Shield extends Obj {
     hp: number // shields absorb enemy shots, missiles detonate on them
@@ -175,6 +188,7 @@ export class GameScene extends Phaser.Scene {
     private spawnTimerS!: number
     private shieldTimerS!: number
     private bossRocketTimerS!: number
+    private bossHelperTimerS!: number
     private intermissionS!: number
     private extraLifeAt!: number
     private hintS!: number
@@ -552,7 +566,7 @@ export class GameScene extends Phaser.Scene {
             if (!s.dead && reach(s)) s.dead = true
         }
         for (const r of this.enemyRockets) {
-            if (!r.dead && reach(r)) r.dead = true
+            if (!r.dead && reach(r)) this.damageRocket(r, MISSILE_DAMAGE)
         }
         for (const sh of this.shields) {
             if (!sh.dead && reach(sh)) sh.dead = true
@@ -574,28 +588,31 @@ export class GameScene extends Phaser.Scene {
     }
     private spawnRow(): void {
         const kind = this.randomKind()
-        const stats = ENEMY_STATS[kind]
         const count = Math.min(3, this.quota() - this.spawned)
         const homeY = 80 + Math.random() * (ENEMY_HOME_MAX_Y - 80)
         for (let i = 0; i < count; i++) {
-            const x = (W * (i + 1)) / (count + 1)
-            const dir = Math.random() < 0.5 ? -1 : 1
-            const speed = (ENEMY_DRIFT_BASE + this.level * ENEMY_DRIFT_PER_LEVEL) * (0.8 + Math.random() * 0.4)
-            const vy = Math.random() < 0.5 ? -speed : speed
-            const hp = Math.round(stats.hp * (1 + (this.level - 1) * ENEMY_HP_GROWTH))
-            const e: Enemy = {
-                ...this.makeObj(kind, x, -30, dir * (40 + this.level * 2), vy, stats.radius, 5),
-                kind,
-                hp,
-                maxHp: hp,
-                marked: Math.random() < MARK_CHANCE,
-                fireTimer: this.fireDelay(stats.fireEvery),
-                homeY,
-                rocketTimer: stats.rocketEvery > 0 ? this.fireDelay(stats.rocketEvery) : Infinity,
-            }
-            this.enemies.push(e)
+            this.createEnemy(kind, (W * (i + 1)) / (count + 1), -30, homeY)
             this.spawned++
         }
+    }
+    private createEnemy(kind: EnemyKind, x: number, y: number, homeY: number): Enemy {
+        const stats = ENEMY_STATS[kind]
+        const dir = Math.random() < 0.5 ? -1 : 1
+        const speed = (ENEMY_DRIFT_BASE + this.level * ENEMY_DRIFT_PER_LEVEL) * (0.8 + Math.random() * 0.4)
+        const vy = Math.random() < 0.5 ? -speed : speed
+        const hp = Math.round(stats.hp * (1 + (this.level - 1) * ENEMY_HP_GROWTH))
+        const e: Enemy = {
+            ...this.makeObj(kind, x, y, dir * (40 + this.level * 2), vy, stats.radius, 5),
+            kind,
+            hp,
+            maxHp: hp,
+            marked: Math.random() < MARK_CHANCE,
+            fireTimer: this.fireDelay(stats.fireEvery),
+            homeY,
+            rocketTimer: stats.rocketEvery > 0 ? this.fireDelay(stats.rocketEvery) : Infinity,
+        }
+        this.enemies.push(e)
+        return e
     }
     private spawnBoss(): void {
         const hp = BOSS_BASE_HP + this.level * BOSS_HP_PER_LEVEL
@@ -607,6 +624,7 @@ export class GameScene extends Phaser.Scene {
         }
         this.boss = boss
         this.bossRocketTimerS = BOSS_ROCKET_EVERY_S
+        this.bossHelperTimerS = BOSS_HELPER_EVERY_S
     }
     private updateWaves(dt: number): void {
         if (this.state !== 'playing') return
@@ -648,7 +666,7 @@ export class GameScene extends Phaser.Scene {
             }
             e.rocketTimer -= dt
             if (e.rocketTimer <= 0 && this.state === 'playing' && e.y > 0) {
-                this.spawnEnemyRocket(e.x, e.y + e.radius, ENEMY_ROCKET_SPEED + this.level * ENEMY_ROCKET_SPEED_PER_LEVEL, ENEMY_ROCKET_TURN + this.level * ENEMY_ROCKET_TURN_PER_LEVEL, ENEMY_ROCKET_LIFE_S, ENEMY_ROCKET_RADIUS, 0xffaa55)
+                this.spawnEnemyRocket(e.x, e.y + e.radius, ENEMY_ROCKET_SPEED + this.level * ENEMY_ROCKET_SPEED_PER_LEVEL, ENEMY_ROCKET_TURN + this.level * ENEMY_ROCKET_TURN_PER_LEVEL, ENEMY_ROCKET_LIFE_S, ENEMY_ROCKET_RADIUS)
                 e.rocketTimer = this.fireDelay(ENEMY_STATS[e.kind].rocketEvery)
             }
         }
@@ -663,24 +681,68 @@ export class GameScene extends Phaser.Scene {
         }
         boss.img.setPosition(boss.x, boss.y)
         if (this.state !== 'playing') return
+        // Index grows with every boss: more guns, more rockets
+        const index = Math.floor(this.level / BOSS_EVERY)
         boss.fireTimer -= dt
         if (boss.fireTimer <= 0) {
-            // Three straight shots from the boss hull
-            for (const dx of [-50, 0, 50]) this.fireShot(boss.x + dx, boss.y + 50, 230 + this.level * 3)
+            const n = Math.min(9, 3 + index * 2)
+            for (let i = 0; i < n; i++) {
+                const dx = (i - (n - 1) / 2) * 30
+                this.fireShot(boss.x + dx, boss.y + 50, 230 + this.level * 3)
+            }
             boss.fireTimer = Math.max(0.7, 1.3 - this.level * 0.01)
         }
         this.bossRocketTimerS -= dt
         if (this.bossRocketTimerS <= 0) {
             this.bossRocketTimerS = BOSS_ROCKET_EVERY_S
-            for (const dx of [-60, 60]) {
-                this.spawnEnemyRocket(boss.x + dx, boss.y + 40, BOSS_ROCKET_SPEED, BOSS_ROCKET_TURN, BOSS_ROCKET_LIFE_S, BOSS_ROCKET_RADIUS, 0xff5555)
+            const n = Math.min(6, 2 + index)
+            for (let i = 0; i < n; i++) {
+                const dx = (i - (n - 1) / 2) * 40
+                this.spawnEnemyRocket(boss.x + dx, boss.y + 40, BOSS_ROCKET_SPEED, BOSS_ROCKET_TURN, BOSS_ROCKET_LIFE_S, BOSS_ROCKET_RADIUS)
             }
         }
+        // Helpers keep arriving while the boss is alive
+        this.bossHelperTimerS -= dt
+        if (this.bossHelperTimerS <= 0) {
+            this.bossHelperTimerS = BOSS_HELPER_EVERY_S
+            this.spawnHelpers(boss)
+        }
     }
-    private spawnEnemyRocket(x: number, y: number, speed: number, turn: number, lifeS: number, radius: number, tint: number): void {
-        const r: EnemyRocket = { ...this.makeObj('missile', x, y, 0, speed, radius, 6), age: 0, speed, turn, lifeS }
-        r.img.setTint(tint)
+    private spawnHelpers(boss: Boss): void {
+        const alive = this.enemies.filter((e) => !e.dead).length
+        const n = Math.min(BOSS_HELPER_COUNT, BOSS_HELPER_MAX - alive)
+        for (let i = 0; i < n; i++) {
+            const x = boss.x + (i - (n - 1) / 2) * 70
+            const homeY = 80 + Math.random() * (ENEMY_HOME_MAX_Y - 80)
+            this.createEnemy(this.randomKind(), x, -30, homeY)
+        }
+    }
+    // Rocket strength depends on the current level (tier table above)
+    private rocketTier(): { hp: number; tint: number } {
+        let tier = ROCKET_TIERS[0]
+        for (const t of ROCKET_TIERS) if (this.level >= t.minLevel) tier = t
+        return tier
+    }
+    private spawnEnemyRocket(x: number, y: number, speed: number, turn: number, lifeS: number, radius: number): void {
+        const tier = this.rocketTier()
+        const r: EnemyRocket = {
+            ...this.makeObj('missile', x, y, 0, speed, radius, 6),
+            age: 0,
+            speed,
+            turn,
+            lifeS,
+            hp: tier.hp,
+            tint: tier.tint,
+        }
+        r.img.setTint(tier.tint)
         this.enemyRockets.push(r)
+    }
+    private damageRocket(r: EnemyRocket, dmg: number): void {
+        if (r.dead) return
+        r.hp -= dmg
+        if (r.hp > 0) return
+        r.dead = true
+        this.blast(r.x, r.y, 24, r.tint)
     }
     private fireShot(x: number, y: number, speed: number): void {
         this.shots.push(this.makeObj('eshot', x, y, 0, speed, SHOT_RADIUS, 6))
@@ -714,6 +776,11 @@ export class GameScene extends Phaser.Scene {
             return
         }
         boss.dead = true
+        for (const e of this.enemies) {
+            if (e.dead) continue
+            e.dead = true
+            this.blast(e.x, e.y, 36, 0xffaa33)
+        }
         this.addScore(2000)
         audio.sfx('explode')
         this.blast(boss.x, boss.y, 90, 0xff4444)
@@ -824,8 +891,7 @@ export class GameScene extends Phaser.Scene {
             const rocket = this.enemyRockets.find((r) => !r.dead && hits(b, r))
             if (rocket) {
                 b.dead = true
-                rocket.dead = true
-                this.blast(rocket.x, rocket.y, 24, 0xff5555)
+                this.damageRocket(rocket, b.damage)
                 continue
             }
             if (this.boss && !this.boss.dead && hits(b, this.boss)) {
