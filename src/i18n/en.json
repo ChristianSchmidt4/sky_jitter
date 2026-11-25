@@ -7,7 +7,7 @@
   "gameOver": "Game Over",
   "victory": "Victory! All 50 levels cleared",
   "restart": "Restart",
-  "hint": "Tilt / ← → = move · ↑ ↓ = height · Space / tap = shoot · X / shake = missile · P = pause",
+  "hint": "Tilt / ← → = move · ↑ ↓ = height · Space / tap = shoot · X / shake = missile · P = pause · F / autofire button = autofire",
   "missiles": "Missiles",
   "weapon": "Weapon",
   "weaponUp": "Weapon upgraded: level {level}",
@@ -23,5 +23,8 @@
   "paused": "Paused",
   "shield": "Shield",
   "shieldCharged": "Shield recharged",
-  "bossRocket": "Boss missile!"
+  "bossRocket": "Boss missile!",
+  "autofire": "Autofire",
+  "autofireOn": "Autofire on",
+  "autofireOff": "Autofire off"
 }

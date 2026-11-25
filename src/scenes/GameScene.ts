@@ -206,6 +206,9 @@ export class GameScene extends Phaser.Scene {
     private keyMissile?: Phaser.Input.Keyboard.Key
     private keyRestart?: Phaser.Input.Keyboard.Key
     private keyPause?: Phaser.Input.Keyboard.Key
+    private keyAutofire?: Phaser.Input.Keyboard.Key
+    private autofire!: boolean
+    private autofireText!: Phaser.GameObjects.Text
     private scoreText!: Phaser.GameObjects.Text
     private livesText!: Phaser.GameObjects.Text
     private shieldText!: Phaser.GameObjects.Text
@@ -233,6 +236,11 @@ export class GameScene extends Phaser.Scene {
         // Tap on the pause button toggles pause (works in both directions)
         if (this.pauseText.visible && this.pauseText.getBounds().contains(pointer.x, pointer.y)) {
             this.togglePause()
+            return
+        }
+        // Tap on the autofire button toggles continuous fire (does not start a manual shot)
+        if (this.autofireText.visible && this.autofireText.getBounds().contains(pointer.x, pointer.y)) {
+            this.toggleAutofire()
             return
         }
         if (this.state === 'paused') return
@@ -266,6 +274,7 @@ export class GameScene extends Phaser.Scene {
         this.nextFireMs = 0
         this.nextMissileMs = 0
         this.firing = false
+        this.autofire = false
         this.tilt = 0
         this.tiltY = 0
         this.spawned = 0
@@ -302,6 +311,7 @@ export class GameScene extends Phaser.Scene {
         this.keyMissile = kb?.addKey(Phaser.Input.Keyboard.KeyCodes.X)
         this.keyRestart = kb?.addKey(Phaser.Input.Keyboard.KeyCodes.R)
         this.keyPause = kb?.addKey(Phaser.Input.Keyboard.KeyCodes.P)
+        this.keyAutofire = kb?.addKey(Phaser.Input.Keyboard.KeyCodes.F)
         this.game.events.on('tilt', this.onTilt)
         this.game.events.on('shake', this.onShake)
         this.input.on('pointerdown', this.onPointerDown)
@@ -314,6 +324,7 @@ export class GameScene extends Phaser.Scene {
         const dt = Math.min(deltaMs, 50) / 1000
         if (this.keyPause && Phaser.Input.Keyboard.JustDown(this.keyPause)) this.togglePause()
         if (this.state === 'paused') return
+        if (this.keyAutofire && Phaser.Input.Keyboard.JustDown(this.keyAutofire)) this.toggleAutofire()
         this.clockMs += dt * 1000
         this.background.update(dt)
         if (this.state === 'over' || this.state === 'won') {
@@ -396,6 +407,12 @@ export class GameScene extends Phaser.Scene {
         this.overlayText.setText(`${t('paused')}\n\n${t('resume')}`).setVisible(true)
         audio.audioContext?.suspend()
     }
+    // Dauerfeuer: schießt ohne gedrückte Taste/Berührung durchgehend
+    private toggleAutofire(): void {
+        if (this.state !== 'playing' && this.state !== 'intermission') return
+        this.autofire = !this.autofire
+        this.showMessage(t(this.autofire ? 'autofireOn' : 'autofireOff'), 1200)
+    }
     private cleanup(): void {
         this.game.events.off('tilt', this.onTilt)
         this.game.events.off('shake', this.onShake)
@@ -455,7 +472,7 @@ export class GameScene extends Phaser.Scene {
         if (this.lives <= 0) this.finish('over')
     }
     private updateFire(): void {
-        const holding = this.firing || Boolean(this.keyFire?.isDown)
+        const holding = this.autofire || this.firing || Boolean(this.keyFire?.isDown)
         if (this.state !== 'playing' || !holding || this.clockMs < this.nextFireMs) return
         const spec = weaponSpec(this.weaponLevel)
         for (const s of spec.shots) {
@@ -1004,6 +1021,10 @@ export class GameScene extends Phaser.Scene {
             .text(W - 16, 60, t('pause'), { ...style, fontSize: '16px' })
             .setOrigin(1, 0)
             .setDepth(30)
+        this.autofireText = this.add
+            .text(W - 16, 84, '', { ...style, fontSize: '16px' })
+            .setOrigin(1, 0)
+            .setDepth(30)
         this.bossBar = this.add
             .rectangle(W / 2 - BOSS_BAR_W / 2, BOSS_BAR_Y, BOSS_BAR_W, 8, 0xff4444)
             .setOrigin(0, 0.5)
@@ -1031,6 +1052,10 @@ export class GameScene extends Phaser.Scene {
         this.levelText.setText(`${t('level')} ${this.level}`)
         this.ammoText.setText(`${t('missiles')}: ${this.missileAmmo}`)
         this.weaponText.setText(`${t('weapon')}: ${this.weaponLevel}/${MAX_WEAPON_LEVEL}`)
+        const canAct = this.state === 'playing' || this.state === 'intermission' || this.state === 'paused'
+        this.autofireText.setVisible(canAct)
+        this.autofireText.setText(`${t('autofire')}: ${t(this.autofire ? 'on' : 'off')}`)
+        this.autofireText.setColor(this.autofire ? '#66ff99' : '#e8f7ff')
         const boss = this.boss
         this.bossBar.setVisible(Boolean(boss && !boss.dead))
         if (boss) this.bossBar.setScale(Phaser.Math.Clamp(boss.hp / boss.maxHp, 0, 1), 1)
