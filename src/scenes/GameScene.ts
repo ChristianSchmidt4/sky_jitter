@@ -880,16 +880,12 @@ export class GameScene extends Phaser.Scene {
             boss.vx = -boss.vx
             boss.x = Phaser.Math.Clamp(boss.x, BOSS_EDGE, W - BOSS_EDGE)
         }
-        // End Boss: sanftes Wippen der Tentakel
-        if (boss.kind === 'endBoss') {
-            const bob = Math.sin(this.clockMs / 600) * 8
-            boss.y = BOSS_Y + bob
-        }
-        boss.img.setPosition(boss.x, boss.y)
+        // End Boss: statische Position (Animation läuft über Overlay)
+        boss.img.setPosition(boss.x, BOSS_Y)
         if (this.state !== 'playing') return
         const index = Math.floor(this.level / BOSS_EVERY)
         const isEnd = boss.kind === 'endBoss'
-        // End Boss: 8 Richtungen aus allen Tentakeln
+        // End Boss: Tentakel-Attacken – vor allem Laser
         if (isEnd) {
             this.updateEndBoss(dt, boss, index)
             return
@@ -960,11 +956,11 @@ export class GameScene extends Phaser.Scene {
             const angleDeg = dirs[idx]
             const speed = 220 + this.level * 6
             const roll = Math.random()
-            // Zufällig: 0-40 = Normaler Schuss, 40-70 = Laser (auf Spieler), 70-100 = Rakete
-            if (roll < 0.40) {
+            // Verteilung: 0-35 = Normaler Schuss, 35-80 = Laser (auf Spieler), 80-100 = Rakete
+            if (roll < 0.35) {
                 // Normaler Schuss aus Tentakel-Richtung (nur nach unten)
                 this.fireAngledShot(boss.x, boss.y + 50, speed, angleDeg)
-            } else if (roll < 0.70) {
+            } else if (roll < 0.80) {
                 // Zielgerichteter Laser (wie enemyLaser)
                 const laserAngle = Phaser.Math.DegToRad(
                     Phaser.Math.RadToDeg(Math.atan2(this.px - boss.x, this.py - boss.y))
@@ -985,11 +981,11 @@ export class GameScene extends Phaser.Scene {
             }
             boss.fireTimer = 0.35 + Math.random() * 0.2 // ca. 3-5 Schüsse/s gesamt
         }
-        // End Boss feuert häufiger Raketen
+        // End Boss feuert seltener Raketen-Salven (Laser dominieren)
         this.bossRocketTimerS -= dt
         if (this.bossRocketTimerS <= 0) {
-            this.bossRocketTimerS = BOSS_ROCKET_EVERY_S * 0.6
-            const rCount = Math.min(10, 3 + Math.floor(this.level / 5))
+            this.bossRocketTimerS = BOSS_ROCKET_EVERY_S * 1.2 // seltener als vorher
+            const rCount = Math.min(8, 2 + Math.floor(this.level / 6))
             for (let i = 0; i < rCount; i++) {
                 const dx = (i - (rCount - 1) / 2) * 35
                 this.spawnEnemyRocket(boss.x + dx, boss.y + 60, BOSS_ROCKET_SPEED * 1.2, BOSS_ROCKET_TURN, BOSS_ROCKET_LIFE_S, BOSS_ROCKET_RADIUS)
