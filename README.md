@@ -34,7 +34,7 @@ Auf dem Gerät: Browser öffnen, „Zum Startbildschirm hinzufügen" für Vollbi
 ## Elemente
 ### Spieler-Schiff
 - Start mit 5 Leben.
-- **Schild** (0–100 %): Zieht Treffer zuerst ab (35 Schaden pro Treffer). Bei 0 % wird ein Leben abgezogen, Respawn mit 1,5 s Unverwundbarkeit. Schild-Treffer geben 0,4 s Unverwundbarkeit.
+- **Schutzschild** (0–100 %): Zieht Treffer zuerst ab (35 Schaden pro Treffer). Bei 0 % wird ein Leben abgezogen, Respawn mit 1,5 s Unverwundbarkeit. Schutzschild-Treffer geben 0,4 s Unverwundbarkeit. Visuell als Kreis um das Spieler-Schiff dargestellt, der mit abnehmendem Schutzschild schwächer wird.
 - **Waffenstufen 1–10**: Mehr Schüsse, höherer Schaden, seitliche/rückwärtige Richtungen ab Stufe 6.
 - **Raketen-Munition**: Start mit 3, Nachschub durch Widgets (+2).
 - Kontakt mit Gegner/Boss wirkt wie ein Treffer.
@@ -64,7 +64,7 @@ Auf dem Gerät: Browser öffnen, „Zum Startbildschirm hinzufügen" für Vollbi
 ### Bosse
 - Basis-HP: 160, +30 pro Level.
 - Bewegt sich seitlich, feuert 3 gerade Schüsse und **Boss-Raketen** (zielsuchend, abschießbar).
-- Beim Tod: garantierte Schild-Aufladung + Raketen-Widget.
+- Beim Tod: garantierte Schutzschild-Aufladung + Raketen-Widget.
 - 2000 Punkte, HP-Balken oben im HUD.
 ### Raketen (Spieler)
 - Zielsuchend, maximale Lebensdauer 3,5 s.
@@ -77,14 +77,14 @@ Auf dem Gerät: Browser öffnen, „Zum Startbildschirm hinzufügen" für Vollbi
 |-----|----------|--------|-------------|
 | Raketen-Widget | Grünes Diamant | +2 Raketen | 12 % (markierte Gegner) |
 | Waffen-Widget | Oranges Dreieck | +1 Waffenstufe | 3 % |
-| Schild-Widget | Blaues Plus | Schild auf 100 % | 4 % |
-### Schutzschilde (neutral)
+| Schutzschild-Widget | Blaues Plus | Schutzschild auf 100 % | 4 % |
+### Neutrale Schutzschilde
 - Schweben quer durchs Bild, absorbieren Gegner-Schüsse.
 - 3 HP, transparent bei Beschädigung.
 - Explodieren bei Raketenkontakt.
 - Spawnen alle 9 s.
 ## HUD
-- Oben links: Punkte, Leben, Schild (%).
+- Oben links: Punkte, Leben, Schutzschild (%).
 - Oben Mitte: Level.
 - Oben rechts: Raketen-Munition, Waffenstufe, Pause-Button.
 - Boss-HP-Balken unter der Level-Anzeige.

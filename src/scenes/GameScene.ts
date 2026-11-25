@@ -168,6 +168,8 @@ export class GameScene extends Phaser.Scene {
     private firing!: boolean
     private tilt!: number
     private tiltY!: number
+    private smoothAxisX: number = 0
+    private smoothAxisY: number = 0
     private spawned!: number
     private spawnTimerS!: number
     private shieldTimerS!: number
@@ -192,6 +194,8 @@ export class GameScene extends Phaser.Scene {
     private scoreText!: Phaser.GameObjects.Text
     private livesText!: Phaser.GameObjects.Text
     private shieldText!: Phaser.GameObjects.Text
+    private shieldCircle!: Phaser.GameObjects.Graphics
+    private shieldStroke!: Phaser.GameObjects.Graphics
     private levelText!: Phaser.GameObjects.Text
     private ammoText!: Phaser.GameObjects.Text
     private weaponText!: Phaser.GameObjects.Text
@@ -206,9 +210,9 @@ export class GameScene extends Phaser.Scene {
     }
     private onShake = (magnitude: number): void => {
         const strength = Math.abs(magnitude)
-        if (strength < SHAKE_THRESHOLD) return
+        if (strength < 3) return
         // Intensity sets the salvo size; repeated shake events add more salvos over time
-        this.fireMissiles(Math.min(3, Math.floor(strength / SHAKE_THRESHOLD)))
+        this.fireMissiles(Math.min(3, Math.floor(strength / 3)))
     }
     private onPointerDown = (pointer: Phaser.Input.Pointer): void => {
         // Tap on the pause button toggles pause (works in both directions)
@@ -272,6 +276,10 @@ export class GameScene extends Phaser.Scene {
         this.makePickupShieldTexture()
         this.background = new Background(this, W, H)
         this.player = this.add.image(this.px, this.py, 'player').setDepth(10)
+        this.shieldCircle = this.add.graphics().setDepth(9)
+        this.shieldStroke = this.add.graphics().setDepth(9)
+        this.shieldCircle.setVisible(false)
+        this.shieldStroke.setVisible(false)
         this.createHud()
         const kb = this.input.keyboard
         this.cursors = kb?.createCursorKeys()
@@ -377,6 +385,8 @@ export class GameScene extends Phaser.Scene {
         this.input.off('pointerdown', this.onPointerDown)
         this.input.off('pointerup', this.onPointerUp)
         this.input.off('pointerupoutside', this.onPointerUp)
+        this.shieldCircle.destroy()
+        this.shieldStroke.destroy()
     }
     // ---------- Player ----------
     private get playerCircle(): Circle {
@@ -384,16 +394,29 @@ export class GameScene extends Phaser.Scene {
     }
     private updatePlayer(dt: number): void {
         const keyX = (this.cursors?.left.isDown ? -1 : 0) + (this.cursors?.right.isDown ? 1 : 0)
-        const tiltX = Phaser.Math.Clamp(this.tilt / 25, -1, 1)
-        const axis = Phaser.Math.Clamp(keyX + tiltX, -1, 1)
-        this.px = Phaser.Math.Clamp(this.px + axis * PLAYER_SPEED * dt, PLAYER_EDGE, W - PLAYER_EDGE)
+        const tiltX = Phaser.Math.Clamp(this.tilt / 22.5, -1, 1)
+        const targetX = Phaser.Math.Clamp(keyX + tiltX, -1, 1)
+        this.smoothAxisX = Phaser.Math.Linear(this.smoothAxisX, targetX, 0.12)
+        this.px = Phaser.Math.Clamp(this.px + this.smoothAxisX * PLAYER_SPEED * dt, PLAYER_EDGE, W - PLAYER_EDGE)
         const keyY = (this.cursors?.down.isDown ? 1 : 0) - (this.cursors?.up.isDown ? 1 : 0)
-        const tiltY = Phaser.Math.Clamp(this.tiltY / 25, -1, 1)
-        const axisY = Phaser.Math.Clamp(keyY + tiltY, -1, 1)
-        this.py = Phaser.Math.Clamp(this.py + axisY * PLAYER_Y_SPEED * dt, PLAYER_MIN_Y, PLAYER_MAX_Y)
+        const tiltY = Phaser.Math.Clamp(this.tiltY / 22.5, -1, 1)
+        const targetY = Phaser.Math.Clamp(keyY + tiltY, -1, 1)
+        this.smoothAxisY = Phaser.Math.Linear(this.smoothAxisY, targetY, 0.12)
+        this.py = Phaser.Math.Clamp(this.py + this.smoothAxisY * PLAYER_Y_SPEED * dt, PLAYER_MIN_Y, PLAYER_MAX_Y)
         this.invulnS = Math.max(0, this.invulnS - dt)
         const blink = this.invulnS > 0 && Math.floor(this.clockMs / 100) % 2 === 0
         this.player.setPosition(this.px, this.py).setAlpha(blink ? 0.3 : 1)
+        this.shieldCircle.clear()
+        this.shieldStroke.clear()
+        const shieldRatio = this.playerShield / PLAYER_SHIELD_MAX
+        const visible = shieldRatio > 0
+        this.shieldCircle.setVisible(visible)
+        this.shieldStroke.setVisible(visible)
+        if (visible) {
+            const alpha = 0.05 + 0.2 * shieldRatio
+            this.shieldCircle.fillStyle(0x00ccff, alpha).fillCircle(this.px, this.py, PLAYER_RADIUS + 6)
+            this.shieldStroke.lineStyle(2, 0x66e0ff, 0.2 + 0.8 * shieldRatio).strokeCircle(this.px, this.py, PLAYER_RADIUS + 6)
+        }
     }
     // Damage first drains the shield; only without shield a hit costs one life
     private hitPlayer(damage: number): void {
@@ -410,6 +433,7 @@ export class GameScene extends Phaser.Scene {
         this.px = W / 2
         this.py = PLAYER_START_Y
         this.playerShield = PLAYER_SHIELD_MAX
+        this.shieldCircle.setVisible(true)
         this.invulnS = RESPAWN_INVULN_S
         if (this.lives <= 0) this.finish('over')
     }
