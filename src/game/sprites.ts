@@ -98,56 +98,67 @@ function drawDouble(g: Gfx): void {
 // Mothership boss: wings, armor plates, cockpit dome, turrets, glowing core
 // End Boss – Kraken: bulbusser Kopf, acht Tentakel, furchterregende Augen, spitzer Mund
 function drawEndBoss(g: Gfx): void {
-  // Schatten / Aura
-  g.fillStyle(0x440066, 0.15).fillEllipse(100, 70, 210, 120)
+  // Schatten / pulsierende Aura
+  g.fillStyle(0x220044, 0.12).fillEllipse(100, 70, 230, 140)
+  g.fillStyle(0x550088, 0.06).fillEllipse(100, 70, 250, 155)
   // Tentakel (8 wellenförmige Linien aus kleinen Kreisen)
-  g.fillStyle(0x5522aa, 1)
+  g.fillStyle(0x4a1d77, 1)
   const tentaclePaths = [
-    [[30, 80], [26, 90], [34, 100], [28, 110], [32, 120], [24, 130], [14, 140]],
-    [[45, 82], [42, 92], [50, 102], [44, 112], [48, 122], [40, 132], [32, 145]],
-    [[60, 84], [57, 94], [65, 104], [59, 114], [63, 124], [55, 134], [50, 148]],
-    [[75, 85], [73, 95], [81, 105], [75, 115], [79, 125], [72, 135], [75, 150]],
-    [[100, 85], [98, 95], [106, 105], [100, 115], [104, 125], [97, 135], [125, 150]],
-    [[125, 84], [123, 94], [131, 104], [125, 114], [129, 124], [121, 134], [150, 148]],
-    [[140, 82], [138, 92], [146, 102], [140, 112], [144, 122], [136, 132], [175, 145]],
-    [[170, 80], [168, 90], [176, 100], [170, 110], [174, 120], [166, 130], [190, 140]],
+    [[28, 78], [22, 90], [32, 102], [26, 114], [30, 126], [22, 136], [12, 148]],
+    [[42, 80], [36, 92], [48, 104], [42, 116], [46, 128], [38, 138], [30, 150]],
+    [[56, 82], [50, 94], [62, 106], [56, 118], [60, 130], [52, 140], [48, 152]],
+    [[72, 83], [66, 95], [78, 107], [72, 119], [76, 131], [68, 141], [74, 154]],
+    [[100, 83], [96, 95], [108, 107], [100, 119], [104, 131], [96, 141], [126, 154]],
+    [[128, 82], [122, 94], [134, 106], [128, 118], [132, 130], [124, 140], [152, 152]],
+    [[144, 80], [138, 92], [150, 104], [144, 116], [148, 128], [140, 138], [176, 150]],
+    [[172, 78], [166, 90], [178, 102], [172, 114], [176, 126], [168, 136], [192, 148]],
   ]
   for (const path of tentaclePaths) {
     for (const [x, y] of path) {
       g.fillCircle(x, y, 5)
     }
   }
-  // Kraken-Kopf (bulbus)
-  g.fillStyle(0x441188, 1).fillEllipse(100, 50, 90, 55)
-  g.lineStyle(3, 0x1a0044, 1).strokeEllipse(100, 50, 90, 55)
-  // Haut-Texturen (dunkle Flecken)
-  g.fillStyle(0x330066, 0.5).fillCircle(70, 40, 12)
-  g.fillStyle(0x330066, 0.5).fillCircle(130, 45, 10)
-  g.fillStyle(0x330066, 0.5).fillCircle(100, 30, 8)
-  // Augen (grausam, leuchtend rot)
-  g.fillStyle(0xff0022, 1).fillEllipse(78, 50, 18, 14)
-  g.fillStyle(0xff0022, 1).fillEllipse(122, 50, 18, 14)
-  // Pupillen
-  g.fillStyle(0x000000, 1).fillEllipse(78, 50, 8, 10)
-  g.fillStyle(0x000000, 1).fillEllipse(122, 50, 8, 10)
-  // Augenreflex
-  g.fillStyle(0xff6688, 0.7).fillEllipse(74, 47, 4, 4)
-  g.fillStyle(0xff6688, 0.7).fillEllipse(118, 47, 4, 4)
-  // Fangmund
-  g.fillStyle(0x220033, 1).fillEllipse(100, 66, 22, 10)
-  g.fillStyle(0xcc0033, 0.8).fillEllipse(100, 68, 16, 6)
-  // Zähne
-  g.fillStyle(0xffffff, 1)
-  for (const x of [86, 93, 100, 107, 114]) {
-    g.fillTriangle(x - 3, 62, x + 3, 62, x, 68)
-    g.fillTriangle(x - 3, 72, x + 3, 72, x, 66)
-  }
   // Saugnäpfe an den Tentakelenden
-  g.fillStyle(0xaa44ff, 0.6)
-  const tentacleEnds = [[14, 140], [32, 145], [50, 148], [75, 150], [125, 150], [150, 148], [175, 145], [190, 140]]
+  g.fillStyle(0x8833cc, 0.7)
+  const tentacleEnds = [[12, 148], [30, 150], [48, 152], [74, 154], [126, 154], [152, 152], [176, 150], [192, 148]]
   for (const [tx, ty] of tentacleEnds) {
     g.fillCircle(tx, ty, 4)
   }
+  // Kraken-Kopf (bulbus, leicht unregelmäßig)
+  g.fillStyle(0x3d0f70, 1).fillEllipse(100, 48, 92, 58)
+  g.lineStyle(3, 0x1a0044, 1).strokeEllipse(100, 48, 92, 58)
+  // Haut-Texturen (dunkle Flecken + Adern)
+  g.fillStyle(0x2a0855, 0.6).fillCircle(68, 38, 14)
+  g.fillStyle(0x2a0855, 0.6).fillCircle(132, 42, 12)
+  g.fillStyle(0x2a0855, 0.6).fillCircle(100, 26, 10)
+  g.fillStyle(0x2a0855, 0.6).fillCircle(85, 58, 8)
+  g.fillStyle(0x2a0855, 0.6).fillCircle(115, 56, 8)
+  // Furchterregende Augen (größer, ungleich)
+  g.fillStyle(0x880011, 1).fillEllipse(76, 46, 20, 16)
+  g.fillStyle(0x880011, 1).fillEllipse(124, 46, 20, 16)
+  // Pupillen (schmal, vertical)
+  g.fillStyle(0x000000, 1).fillEllipse(76, 46, 6, 12)
+  g.fillStyle(0x000000, 1).fillEllipse(124, 46, 6, 12)
+  // Augenreflex
+  g.fillStyle(0xff4466, 0.8).fillEllipse(73, 43, 3, 4)
+  g.fillStyle(0xff4466, 0.8).fillEllipse(121, 43, 3, 4)
+  // Fangmund (breites Grinsen)
+  g.fillStyle(0x1a0022, 1).fillEllipse(100, 64, 26, 12)
+  g.fillStyle(0x660022, 0.9).fillEllipse(100, 66, 20, 8)
+  // Zunge
+  g.fillStyle(0x880033, 0.7).fillEllipse(100, 70, 10, 4)
+  // Zähne (spitzer)
+  g.fillStyle(0xdddddd, 1)
+  for (const x of [84, 92, 100, 108, 116]) {
+    g.fillTriangle(x - 3, 58, x + 3, 58, x, 64)
+    g.fillTriangle(x - 3, 72, x + 3, 72, x, 66)
+  }
+  // additional small teeth
+  g.fillStyle(0xeeeeee, 1)
+  g.fillTriangle(78, 60, 82, 60, 80, 65)
+  g.fillTriangle(118, 60, 122, 60, 120, 65)
+  g.fillTriangle(78, 68, 82, 68, 80, 64)
+  g.fillTriangle(118, 68, 122, 68, 120, 64)
 }
 
 function drawBoss(g: Gfx): void {

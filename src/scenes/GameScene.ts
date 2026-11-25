@@ -220,6 +220,8 @@ export class GameScene extends Phaser.Scene {
     private hintS!: number
     private messageS!: number
     private boss!: Boss | null
+    private endBossEyes!: Phaser.GameObjects.Graphics
+    private endBossTentacles!: Phaser.GameObjects.Graphics
     private enemies!: Enemy[]
     private shots!: Obj[]
     private bullets!: Bullet[]
@@ -354,6 +356,82 @@ export class GameScene extends Phaser.Scene {
         this.input.on('pointerupoutside', this.onPointerUp)
         this.events.once(Phaser.Scenes.Events.SHUTDOWN, this.cleanup, this)
         this.startLevel()
+    }
+    // ---------- End Boss overlay animation ----------
+    private initEndBossOverlay(boss: Boss): void {
+        if (this.endBossEyes || this.endBossTentacles) return
+        this.endBossEyes = this.add.graphics().setDepth(11)
+        this.endBossTentacles = this.add.graphics().setDepth(11)
+    }
+    private drawEndBossOverlay(boss: Boss): void {
+        if (boss.kind !== 'endBoss' || !this.endBossEyes || !this.endBossTentacles) return
+        this.endBossEyes.clear()
+        this.endBossTentacles.clear()
+        const bx = boss.x
+        const by = boss.y
+        // Pulsierende Aura
+        const pulse = 0.04 + 0.04 * Math.sin(this.clockMs / 400)
+        this.endBossTentacles.fillStyle(0x4400aa, pulse).fillEllipse(bx, by, 130, 110)
+        // Tentakel-Wellen (8 Tentakel, jede Welle leicht verschoben)
+        const tentacleWave = Math.sin(this.clockMs / 500) * 6
+        const tentacleWave2 = Math.cos(this.clockMs / 450) * 4
+        this.endBossTentacles.lineStyle(6, 0x4a1d77, 0.9)
+        const tentacles = [
+            { xOff: -70, yOff: 32, wave: tentacleWave },
+            { xOff: -54, yOff: 32, wave: tentacleWave2 },
+            { xOff: -38, yOff: 34, wave: tentacleWave },
+            { xOff: -22, yOff: 34, wave: -tentacleWave2 },
+            { xOff: 0, yOff: 34, wave: tentacleWave2 },
+            { xOff: 22, yOff: 34, wave: -tentacleWave },
+            { xOff: 38, yOff: 32, wave: tentacleWave2 },
+            { xOff: 54, yOff: 32, wave: -tentacleWave },
+        ]
+        for (const t of tentacles) {
+            const sx = bx + t.xOff
+            const sy = by + t.yOff
+            const segments = 5
+            let prevX = sx
+            let prevY = sy
+            for (let i = 1; i <= segments; i++) {
+                const frac = i / segments
+                const x = sx + Math.sin(frac * Math.PI + t.wave * 0.3) * 8 * frac
+                const y = sy + 35 * frac
+                this.endBossTentacles.lineBetween(prevX, prevY, x, y)
+                prevX = x
+                prevY = y
+            }
+        }
+        // Augen die den Spieler tracken
+        const eyeLX = bx - 24
+        const eyeRX = bx + 24
+        const eyeY = by - 4
+        // Pupillen-Offset zum Spieler hin
+        const eyeOffset = 3
+        const pxRel = this.px - bx
+        const dirX = pxRel > 0 ? eyeOffset : pxRel < 0 ? -eyeOffset : 0
+        // Augen leuchten
+        const eyeGlow = 0.6 + 0.4 * Math.sin(this.clockMs / 600)
+        this.endBossEyes.fillStyle(0xff0022, eyeGlow).fillEllipse(eyeLX, eyeY, 14, 11)
+        this.endBossEyes.fillStyle(0xff0022, eyeGlow).fillEllipse(eyeRX, eyeY, 14, 11)
+        // Pupillen
+        this.endBossEyes.fillStyle(0x000000, 1).fillEllipse(eyeLX + dirX, eyeY, 5, 8)
+        this.endBossEyes.fillStyle(0x000000, 1).fillEllipse(eyeRX + dirX, eyeY, 5, 8)
+        // Reflex
+        this.endBossEyes.fillStyle(0xff4466, 0.8).fillEllipse(eyeLX - 3, eyeY - 2, 2, 2)
+        this.endBossEyes.fillStyle(0xff4466, 0.8).fillEllipse(eyeRX - 3, eyeY - 2, 2, 2)
+        // Mund (leichtes Öffnen/Schließen)
+        const mouthOpen = 2 + Math.sin(this.clockMs / 800) * 1.5
+        this.endBossEyes.fillStyle(0x220033, 0.9).fillEllipse(bx, by + 16, 18, mouthOpen + 2)
+    }
+    private cleanupEndBossOverlay(): void {
+        if (this.endBossEyes) {
+            this.endBossEyes.destroy()
+            this.endBossEyes = null as unknown as Phaser.GameObjects.Graphics
+        }
+        if (this.endBossTentacles) {
+            this.endBossTentacles.destroy()
+            this.endBossTentacles = null as unknown as Phaser.GameObjects.Graphics
+        }
     }
     update(_time: number, deltaMs: number): void {
         const dt = Math.min(deltaMs, 50) / 1000
@@ -719,6 +797,10 @@ export class GameScene extends Phaser.Scene {
         this.boss = boss
         this.bossRocketTimerS = BOSS_ROCKET_EVERY_S
         this.bossHelperTimerS = BOSS_HELPER_EVERY_S
+        // End Boss: animierte Overlay-Elemente
+        if (isEndBoss) {
+            this.initEndBossOverlay(boss)
+        }
         // End Boss: gruselige Musik
         if (isEndBoss) {
             audio.setScene('endBoss')
@@ -865,9 +947,12 @@ export class GameScene extends Phaser.Scene {
         }
     }
     // End Boss (Krake): 8 Tentakel schießen abwechselnd normale Schüsse,
-    // zielgerichtete Laser und zielsuchende Raketen in zufälligen Richtungen
+    // zielgerichtete Laser und zielsuchende Raketen – nur nach unten
     private updateEndBoss(dt: number, boss: Boss, _index: number): void {
-        const dirs = [0, 30, 60, 90, 120, 150, 180, 210] // 8 Tentakel-Richtungen (Grad)
+        // Augen und Tentakel animieren
+        this.drawEndBossOverlay(boss)
+        // Tentakel-Richtungen: nur nach unten (60° bis 120° = rechts-unten bis links-unten)
+        const dirs = [60, 75, 90, 105, 120] // 5 Richtungen, alle nach unten
         // Jede Sekunde feuert ein neuer Tentakel
         boss.fireTimer -= dt
         if (boss.fireTimer <= 0) {
@@ -875,11 +960,11 @@ export class GameScene extends Phaser.Scene {
             const angleDeg = dirs[idx]
             const speed = 220 + this.level * 6
             const roll = Math.random()
-            // Zufällig: 0-45 = Normaler Schuss, 45-75 = Laser (auf Spieler), 75-100 = Rakete
-            if (roll < 0.45) {
-                // Normaler Schuss aus Tentakel-Richtung
+            // Zufällig: 0-40 = Normaler Schuss, 40-70 = Laser (auf Spieler), 70-100 = Rakete
+            if (roll < 0.40) {
+                // Normaler Schuss aus Tentakel-Richtung (nur nach unten)
                 this.fireAngledShot(boss.x, boss.y + 50, speed, angleDeg)
-            } else if (roll < 0.75) {
+            } else if (roll < 0.70) {
                 // Zielgerichteter Laser (wie enemyLaser)
                 const laserAngle = Phaser.Math.DegToRad(
                     Phaser.Math.RadToDeg(Math.atan2(this.px - boss.x, this.py - boss.y))
@@ -1164,6 +1249,7 @@ export class GameScene extends Phaser.Scene {
         this.pickups = this.reapList(this.pickups)
         if (this.boss?.dead) {
             this.boss.img.destroy()
+            this.cleanupEndBossOverlay()
             this.boss = null
         }
     }

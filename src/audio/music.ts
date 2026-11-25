@@ -81,30 +81,30 @@ export const BOSS_SONG: Song = {
   },
   arrangement: ['A', 'B', 'A', 'C', 'A', 'Bridge', 'C', 'B', 'A', 'C'],
 }
-// End boss song: creepy, dissonant – diminished scale, slow, eerie
+// End boss song: extrem gruselig, dissonant – verminderte Tonleiter + Sekunden, Drohn-Bass, schreiende Melodie
 export const END_BOSS_SONG: Song = {
-  bpm: 100,
+  bpm: 72, // noch langsamer = bedrohlicher
   leadWave: 'sawtooth',
-  bassWave: 'sawtooth',
+  bassWave: 'square',
   sections: {
     A: sec(
-      'Bb4 - C5 - Db5 - Eb5 - F5 - Eb5 - Db5 - C5 -',
-      'Bb1 - Bb1 - F1 - F1 - Bb1 - Bb1 - F1 - F1 -',
+      'A4 - Bb4 - C5 - Bb4 - A4 - G#4 - A4 - Bb4 -',
+      'A1 - A1 - A1 - A1 - A1 - A1 - A1 - A1 -',
     ),
     B: sec(
-      'F5 - - Bb4 - - Eb5 - - C5 - F5 - - Bb4 -',
-      'Bb1 - F1 - Bb1 - F1 - Bb1 - F1 - Bb1 - F1 -',
+      'Eb5 - D5 - Db5 - C5 - Bb4 - B4 - C5 - Db5 -',
+      'Eb1 - Eb1 - Eb1 - Eb1 - Bb1 - Bb1 - Bb1 - Bb1 -',
     ),
     C: sec(
-      'Db5 - C5 - Bb4 - A4 - G4 - A4 - Bb4 - C5 -',
-      'Bb1 - F1 - Eb2 - Eb2 - Bb1 - F1 - Bb1 - F1 -',
+      'F5 - F#5 - G5 - F#5 - F5 - E5 - Eb5 - D5 -',
+      'D1 - D1 - A1 - A1 - D1 - D1 - A1 - A1 -',
     ),
     Bridge: sec(
-      'Eb5 - Db5 - C5 - Bb4 - A4 - Bb4 - C5 - Db5 -',
-      'Eb2 - - - Bb1 - - - Eb2 - - - Bb1 - - -',
+      'Bb4 - - Db5 - - F5 - - Bb5 - Bb4 - - Db5 - - F5 -',
+      'Bb1 - F1 - Bb1 - F1 - Bb1 - F1 - Bb1 - F1 -',
     ),
   },
-  arrangement: ['A', 'A', 'B', 'A', 'Bridge', 'C', 'B', 'Bridge', 'A', 'C'],
+  arrangement: ['A', 'A', 'B', 'A', 'Bridge', 'C', 'B', 'A', 'Bridge', 'C', 'A', 'B'],
 }
 // Menu song: calmer, melodic theme
 export const MENU_SONG: Song = {
