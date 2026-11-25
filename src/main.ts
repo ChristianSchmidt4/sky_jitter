@@ -3,6 +3,7 @@ import Phaser from 'phaser'
 import { GameScene } from './scenes/GameScene'
 import { t } from './i18n'
 import { audio } from './audio/audio'
+import { updateManager } from './game/update-system'
 const BASE_WIDTH = 960
 const BASE_HEIGHT = 540
 function requireEl<T extends HTMLElement>(id: string): T {
@@ -16,7 +17,7 @@ const rotateHint = requireEl<HTMLDivElement>('rotate-hint')
 const versionText = requireEl<HTMLDivElement>('version-text')
 startButton.textContent = t('start')
 rotateHint.textContent = t('rotateHint')
-versionText.textContent = `v${__APP_VERSION__}`
+versionText.textContent = t('currentVersion', { version: __APP_VERSION__ })
 const game = new Phaser.Game({
   type: Phaser.AUTO,
   parent: 'game-root',
@@ -96,3 +97,5 @@ startButton.addEventListener('click', () => {
   audio.setScene('level')
   void requestSensors().then(() => startOverlay.classList.add('hidden'))
 })
+// Register the PWA update manager – shows a banner when a new version is available
+updateManager.register()

@@ -53,3 +53,44 @@ body {
   font-size: 0.9rem;
   color: #555;
 }
+.update-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  background: rgba(0, 0, 0, 0.95);
+  z-index: 20;
+  text-align: center;
+  padding: 20px;
+  box-sizing: border-box;
+  animation: updateFadeIn 0.4s ease-out;
+}
+.update-overlay h2 {
+  font-size: 1.6rem;
+  color: #66ff99;
+  margin: 0 0 20px;
+}
+.update-overlay button {
+  font-family: inherit;
+  font-size: 1.2rem;
+  color: #0ff;
+  background: transparent;
+  border: 2px solid #0ff;
+  padding: 12px 24px;
+  cursor: pointer;
+}
+.update-overlay button:hover {
+  background: rgba(0, 255, 255, 0.1);
+}
+@keyframes updateFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

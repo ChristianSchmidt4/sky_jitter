@@ -34,6 +34,7 @@ Diese Datei (`PROMPTS.md`) dient ausschließlich der **historischen Dokumentatio
 | 18 | 2026-11-25 | Gyro-Steuerung repariert: doppelte Normierung entfernt (22.5 im GameScene) | tiltWerte kommen bereits als [-1, 1] aus main.ts, / 22.5 war zu träge. Ship reagiert jetzt auf leichtes Drehen. |
 | 19 | 2026-11-25 | Versionsanzeige im Start-Overlay, Minor-Version auto-increment via pre-commit hook | __APP_VERSION__ wird via Vite-define injiziert, version-text in Overlay, .git/hooks/pre-commit inkrementiert Minor-Nummer |
 | 20 | 2026-11-25 | AGENTS.md erstellt – zentrale Agenten-Regeln aus PROMPTS.md extrahiert | AGENTS.md mit Versionierungsregel, Architektur-Overview, Enemy/Boss-Mechanics, iOS-Audio-Regeln. PROMPTS.md auf Prompt-Historie reduziert. |
+| 21 | 2026-11-25 | Vite PWA mit Update-Banner: Service Worker-Updateerkennung und Neustart-Prompt | src/game/update-system.ts, i18n-Strings, CSS, HTML-Overlay, Version 0.3 |
 
 ---
 

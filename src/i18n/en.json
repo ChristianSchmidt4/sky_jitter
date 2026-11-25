@@ -26,5 +26,8 @@
   "bossRocket": "Boss missile!",
   "autofire": "Autofire",
   "autofireOn": "Autofire on",
-  "autofireOff": "Autofire off"
+  "autofireOff": "Autofire off",
+  "updateAvailable": "Update available!",
+  "updateRestart": "Restart to update",
+  "currentVersion": "Version {version}"
 }

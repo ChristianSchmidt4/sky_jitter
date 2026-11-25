@@ -26,5 +26,8 @@
   "bossRocket": "Boss-Rakete!",
   "autofire": "Dauerfeuer",
   "autofireOn": "Dauerfeuer an",
-  "autofireOff": "Dauerfeuer aus"
+  "autofireOff": "Dauerfeuer aus",
+  "updateAvailable": "Update verfügbar!",
+  "updateRestart": "Neustart zum Aktualisieren",
+  "currentVersion": "Version {version}"
 }

@@ -56,6 +56,7 @@ Every `git commit` MUST increment the **minor version** in `package.json`.
 - **Audio:** `src/audio/audio.ts` + `music.ts` — Web Audio API (chiptune)
 - **i18n:** `src/i18n/` — German + English
 - **Background:** `src/game/background.ts` — parallax stars + nebula
+- **PWA Update:** `src/game/update-system.ts` — service worker update detection, banner UI
 
 ---
 
@@ -125,5 +126,32 @@ Weapon level is auto-calculated: `Math.round(level × 1.5)` (max 10).
 - `deviceorientation` event requires `requestPermission()` on iOS 13+.
 - `devicemotion` (shake) also requires `requestPermission()` on iOS.
 - Never use `visibilitychange` to resume audio — it's not a user gesture on iOS.
+
+---
+
+## 10. PWA Configuration
+
+The project uses **Vite PWA plugin** (`vite-plugin-pwa`) configured in `vite.config.ts`.
+
+### Key settings
+- `registerType: 'autoUpdate'` — SW calls `skipWaiting()` when a new SW is available
+- `injectRegister: 'auto'` — registers the service worker automatically
+- Icons and manifest are embedded in the Vite config (no separate manifest file needed)
+
+### Update detection
+- `src/game/update-system.ts` — listens for `controllerchange` and `visibilitychange` events
+- Shows an **update banner** (`#update-banner`) with "Update available!" and "Restart to update"
+- Banner dismisses on tap outside the button; clicking the button reloads the page to apply the new SW
+- The banner is in both languages (i18n keys: `updateAvailable`, `updateRestart`)
+
+### Version tracking
+- Version is defined in `package.json` (`"version": "X.Y"`) and injected at build time as `__APP_VERSION__`
+- Displayed in the start overlay and in the update banner
+- Every commit MUST increment the minor version (see section 1)
+
+### iOS considerations
+- PWA icons must be in `public/icons/` (apple-touch-icon.png, maskable-512.png, icon-512.png)
+- `display: 'standalone'` in manifest makes the app launch full-screen
+- `orientation: 'landscape'` locks to landscape mode
 
 ---
