@@ -1,0 +1,1 @@
+if('serviceWorker' in navigator) {window.addEventListener('load', () => {navigator.serviceWorker.register('/sky_jitter/sw.js', { scope: '/sky_jitter/' })})}
