@@ -88,19 +88,19 @@ export const END_BOSS_SONG: Song = {
   bassWave: 'sawtooth',
   sections: {
     A: sec(
-      'Bb4 - C5 - D5b - E5b - F5 - E5b - D5 - C5 -',
+      'Bb4 - C5 - Db5 - Eb5 - F5 - Eb5 - Db5 - C5 -',
       'Bb1 - Bb1 - F1 - F1 - Bb1 - Bb1 - F1 - F1 -',
     ),
     B: sec(
-      'F5 - - Bb4 - - E5b - - C5 - F5 - - Bb4 - - E5b -',
+      'F5 - - Bb4 - - Eb5 - - C5 - F5 - - Bb4 - - Eb5 -',
       'Bb1 - F1 - Bb1 - F1 - Bb1 - F1 - Bb1 - F1 -',
     ),
     C: sec(
-      'D5b - C5 - Bb4 - A4 - G4 - A4 - Bb4 - C5 -',
+      'Db5 - C5 - Bb4 - A4 - G4 - A4 - Bb4 - C5 -',
       'Bb1 - F1 - Eb2 - Eb2 - Bb1 - F1 - Bb1 - F1 -',
     ),
     Bridge: sec(
-      'Eb5 - Db5 - C5 - Bb4 - A4 - Bb4 - C5 - D5 -',
+      'Eb5 - Db5 - C5 - Bb4 - A4 - Bb4 - C5 - Db5 -',
       'Eb2 - - - Bb1 - - - Eb2 - - - Bb1 - - -',
     ),
   },
