@@ -55,7 +55,7 @@ tests/                  Playwright-Tests (smoke.test.ts, skyjitter.test.ts) + Sc
 ### 3.3 Level
 - **Anzahl:** 50 Level.
 - **Fortschritt:** Schwierigkeit und Dauer steigen mit jedem Level.
-- **Bosse:** Starke Zwischengegner alle 5 Level (5, 10, … 50), mit eigenen Angriffsmustern: gerade Schuss-Salven, zielsuchende Boss-Raketen (alle 3,5 s) und Helfer-Gegner (alle 6 s, max. 8 gleichzeitig). Boss-HP 300 + 60 pro Level. Beim Tod werden alle Gegner und Gegner-Raketen entfernt.
+- **Bosse:** Starke Zwischengegner alle 5 Level (5, 10, … 50), mit escalating Angriffsmustern: gerade Schuss-Salven, diagonale Schüsse (ab Boss 3), seitliche Schüsse (ab Boss 5), alle Richtungen (ab Boss 9). Zielsuchende Boss-Raketen (alle 3,5 s) und Helfer-Gegner (alle 6 s, max. 8 gleichzeitig). Boss-HP 300 + 80 pro Level, Farbe wird mit jedem Boss aggressiver (Lila → Magenta → Rot → Blau → Cyan → Gold → Blutrot). Beim Tod werden alle Gegner und Gegner-Raketen entfernt.
 - **Gegner-Raketen:** Ab Level 1, 4, 8, 13 und 18 jeweils zähere Stufen (HP 1/2/3/4/6) mit eigener Farbe. Schutzschilde absorbieren sie.
 - **Intermission:** Kurze Pause (1,6 s) zwischen den Leveln.
 ### 3.4 Waffen & Upgrades
@@ -105,3 +105,4 @@ tests/                  Playwright-Tests (smoke.test.ts, skyjitter.test.ts) + Sc
 | 11 | 2026-11-24 | README.md und PROMPTS.md mit allen fehlenden Infos aus dem Code aktualisieren | README um Skripte, Waffenstufen-Tabelle, HUD, Technik-Details, Projektstruktur ergänzt. PROMPTS.md um aktuelle Struktur, implementierte Features und Prompt-Historie erweitert |
 | 12 | 2026-11-25 | Schutzschild-Visualisierung: Kreis um Spieler-Schiff, der mit abnehmendem Schutzschild schwächer wird; Begriff "Schild" → "Schutzschild" | GameScene.ts: shieldCircle + shieldStroke Graphics hinzugefügt, i18n aktualisiert, README/PROMPTS aktualisiert |
 | 13 | 2026-11-25 | README.md und PROMPTS.md an den aktuellen Code angleichen | Docs korrigiert: Bosse alle 5 Level, Boss-HP 300 (+60/Level), Gegner-HP +25 %/Level, Dauerfeuer (F / Button), Boss-Helfer und Boss-Raketen, Gegner-Raketen-Stufen, Schutzschilde absorbieren Gegner-Raketen, Test-Beschreibung an reale Tests angepasst |
+| 14 | 2026-11-25 | Stärkere Gegner und Bosse: diagonale/schräge/s Seitliche Bossschüsse, Boss-Farbverlauf (10 Stufen), Gegner-Tönung nach Level | Gegner-HP-Wachstum +35 %, Feuerrate +55 %, Boss-HP +80/Level, Boss-Farben (Lila→Magenta→Rot→Blau→Cyan→Gold→Blutrot), Boss-Schussmuster escalates ab Boss 3/5/9, Gegner-Farbverlauf ab Level 5, Boss-Größe +4 % pro Generation |

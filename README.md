@@ -59,15 +59,30 @@ Auf dem Gerät: Browser öffnen, „Zum Startbildschirm hinzufügen" für Vollbi
 | enemyBug | 1 | 3 | 100 | 200 | – |
 | enemySaucer | 3 | 5 | 250 | 240 | Alle 5 s |
 | enemyFighter | 6 | 7 | 400 | 280 | Alle 3 s |
-- Gegner-Leben steigen pro Level um 25 %, Feuerrate um bis zu 50 %, Schussgeschwindigkeit um 3 pro Level.
+- Gegner-Leben steigen pro Level um 35 %, Feuerrate um bis zu 55 %, Schussgeschwindigkeit um 3 pro Level.
 - Gegner tauchen zur Formationshöhe und bewegen sich dann frei im Bildschirm (Begrenzung oben/unten).
 - **Raketen** werden zielsuchend abgefeuert, Geschwindigkeit (+3/Level) und Drehrate (+0,08/Level) steigen pro Level.
 - Treffer machen Gegner transparenter (HP-Anzeige).
+- **Gegner-Farbe** wird mit steigendem Level aggressiver: ab Level 5 gelblich, ab 18 orange, ab 28 rot, ab 40 lila, ab 45 weiß-hot.
 ### Bosse
 - Erscheinen alle 5 Level; in Boss-Leveln gibt es keine normale Gegner-Welle.
-- HP: 300, +60 pro Level.
-- Bewegt sich seitlich und feuert Salven aus geraden Schüssen (5–9, steigt mit jedem Boss; Feuerrate steigt mit dem Level).
-- **Boss-Raketen** alle 3,5 s (3–6 Stück, zielsuchend, abschießbar).
+- HP: 300, +80 pro Level.
+- Größe wächst pro Boss-Generation um 4 %.
+- **Farbverlauf** mit steigendem Boss-Level:
+  - Boss 1–3 (Level 5–15): Standard-Farbe
+  - Boss 4 (Level 20): Lila (`#9966cc`)
+  - Boss 5 (Level 25): Magenta (`#cc44aa`)
+  - Boss 6 (Level 30): Dunkelrot (`#cc2244`)
+  - Boss 7 (Level 35): Blau (`#4488cc`)
+  - Boss 8 (Level 40): Cyan (`#22cccc`)
+  - Boss 9 (Level 45): Gold (`#cccc44`)
+  - Boss 10 (Level 50): Blutrot (`#cc0022`)
+- **Angriffsmuster skalieren mit dem Boss-Level:**
+  - **Boss 1–2:** gerade Schuss-Salven
+  - **Boss 3+:** + diagonale Schüsse (schräg links/rechts, ±40°)
+  - **Boss 5+:** + seitliche Schüsse (horizontal von den Flanken)
+  - **Boss 9+:** alle Richtungen + mehr Schüsse pro Salve
+- **Boss-Raketen** alle 3,5 s (2–8 Stück, zielsuchend, abschießbar).
 - **Helfer**: alle 6 s kommen 2 neue Gegner dazu (max. 8 gleichzeitig).
 - Beim Tod: 2000 Punkte, garantierte Schutzschild-Aufladung + Raketen-Widget; alle Gegner und Gegner-Raketen werden entfernt, das Level endet.
 - HP-Balken oben im HUD.

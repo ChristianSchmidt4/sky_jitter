@@ -37,8 +37,8 @@ const BULLET_SPEED = 620
 const BULLET_RADIUS = 8
 const SHOT_RADIUS = 5
 const ENEMY_DIVE_SPEED = 140
-const ENEMY_HP_GROWTH = 0.25 // Gegner-Leben steigt pro Level um diesen Anteil
-const ENEMY_FIRE_SPEEDUP = 0.012 // Feuerrate steigt pro Level (max. 50 %)
+const ENEMY_HP_GROWTH = 0.35 // Gegner-Leben steigt pro Level um diesen Anteil (erhöht)
+const ENEMY_FIRE_SPEEDUP = 0.016 // Feuerrate steigt pro Level (max. 55 %)
 const ENEMY_HOME_MAX_Y = H * 0.6 // Formationen liegen maximal in diesem Bereich
 const ENEMY_DRIFT_BASE = 40 // Grundgeschwindigkeit der freien Gegnerbewegung (px/s)
 const ENEMY_MIN_Y = 60 // Gegner bleiben innerhalb des Bildschirms
@@ -58,12 +58,12 @@ const BOSS_RADIUS = 60
 const BOSS_EDGE = 110
 const BOSS_Y = 120
 const BOSS_BASE_HP = 300
-const BOSS_HP_PER_LEVEL = 60
+const BOSS_HP_PER_LEVEL = 80 // Boss-Leben steigt stärker pro Level
 const BOSS_HELPER_EVERY_S = 6 // Boss schickt laufend neue Helfer
 const BOSS_HELPER_COUNT = 2
 const BOSS_HELPER_MAX = 8 // max. gleichzeitig lebende Helfer
 const BOSS_ROCKET_EVERY_S = 3.5
-const BOSS_ROCKET_SPEED = 150
+const BOSS_ROCKET_SPEED = 160 // Bosssraketen etwas schneller
 const BOSS_ROCKET_TURN = 1.6 // radians per second
 const BOSS_ROCKET_LIFE_S = 6
 const BOSS_ROCKET_RADIUS = 10
@@ -74,6 +74,13 @@ const ROCKET_TIERS: { minLevel: number; hp: number; tint: number }[] = [
     { minLevel: 8, hp: 3, tint: 0xff3333 }, // rot
     { minLevel: 13, hp: 4, tint: 0x3399ff }, // blau
     { minLevel: 18, hp: 6, tint: 0xaa55ff }, // lila
+]
+// Farbverlauf für Bosse – stärkere Bosse bekommen intensivere Farbe
+const BOSS_COLORS: number[] = [
+    0xffffff, 0xffffff, 0xffffff, // Boss 1-3: Standard
+    0x9966cc, 0xcc44aa, 0xcc2244, // Boss 4-6: Lila → Magenta → Dunkelrot
+    0x4488cc, 0x22cccc, 0xcccc44, // Boss 7-9: Blau → Cyan → Gold
+    0xcc0022,                        // Boss 10: Blutrot (stärkster Boss)
 ]
 const BOSS_BAR_W = 320
 const BOSS_BAR_Y = 52
@@ -628,17 +635,34 @@ export class GameScene extends Phaser.Scene {
             homeY,
             rocketTimer: stats.rocketEvery > 0 ? this.fireDelay(stats.rocketEvery) : Infinity,
         }
+        // Gegner-Farbe wird mit Level aggressiver: grün → gelb → orange → rot → lila → weiß
+        e.img.setTint(this.enemyTintForLevel())
         this.enemies.push(e)
         return e
     }
+    // Tön-Farbe basierend auf dem aktuellen Level
+    private enemyTintForLevel(): number {
+        const lv = this.level
+        if (lv < 5) return 0xffffff
+        if (lv < 10) return 0xffffaa // gelblich
+        if (lv < 18) return 0xffaa66 // orange
+        if (lv < 28) return 0xff4444 // rot
+        if (lv < 40) return 0xcc44cc // lila
+        return 0xffffff              // weiß-hot
+    }
     private spawnBoss(): void {
+        const index = Math.floor(this.level / BOSS_EVERY)
         const hp = BOSS_BASE_HP + this.level * BOSS_HP_PER_LEVEL
         const boss: Boss = {
-            ...this.makeObj('boss', W / 2, BOSS_Y, 110 + this.level * 2, 0, BOSS_RADIUS, 5),
+            ...this.makeObj('boss', W / 2, BOSS_Y, 110 + index * 4, 0, BOSS_RADIUS, 5),
             hp,
             maxHp: hp,
             fireTimer: 1.2,
         }
+        // Stärkere Bosse: intensivere Farbe und größer
+        const tint = BOSS_COLORS[Math.min(index, BOSS_COLORS.length - 1)]
+        boss.img.setTint(tint)
+        boss.img.setScale(1 + index * 0.04) // +4% Größe pro Boss-Level
         this.boss = boss
         this.bossRocketTimerS = BOSS_ROCKET_EVERY_S
         this.bossHelperTimerS = BOSS_HELPER_EVERY_S
@@ -698,27 +722,52 @@ export class GameScene extends Phaser.Scene {
         }
         boss.img.setPosition(boss.x, boss.y)
         if (this.state !== 'playing') return
-        // Index grows with every boss: more guns, more rockets
         const index = Math.floor(this.level / BOSS_EVERY)
+        // Angriffs-Konfiguration pro Boss-Level: Schussmuster + Feuerrate
+        const hasDiag = index >= 2    // ab Boss 3: diagonale Schüsse
+        const hasSide = index >= 4    // ab Boss 5: seitliche Schüsse
+        const allDir  = index >= 8    // ab Boss 9: alle Richtungen
+        const count = Math.min(15, 3 + index * 2) // mehr Schüsse pro Salve
         boss.fireTimer -= dt
         if (boss.fireTimer <= 0) {
-            const n = Math.min(9, 3 + index * 2)
-            for (let i = 0; i < n; i++) {
-                const dx = (i - (n - 1) / 2) * 30
-                this.fireShot(boss.x + dx, boss.y + 50, 230 + this.level * 3)
+            // Geradeaus
+            const baseCount = hasSide ? 5 : hasDiag ? 5 : count
+            for (let i = 0; i < baseCount; i++) {
+                const dx = (i - (baseCount - 1) / 2) * 30
+                this.fireShot(boss.x + dx, boss.y + 50, 230 + this.level * 5)
             }
-            boss.fireTimer = Math.max(0.7, 1.3 - this.level * 0.01)
+            // Diagonal
+            if (hasDiag) {
+                const diagCount = allDir ? 2 : 1
+                for (let i = 0; i < diagCount; i++) {
+                    const y = 20 + i * 30
+                    this.fireAngledShot(boss.x - 70, boss.y + y, 200 + this.level * 3, allDir ? -55 : -40)
+                    this.fireAngledShot(boss.x + 70, boss.y + y, 200 + this.level * 3, allDir ? 55 : 40)
+                }
+            }
+            // Seitlich
+            if (hasSide) {
+                const sideCount = allDir ? 2 : 1
+                for (let i = 0; i < sideCount; i++) {
+                    const y = 15 + i * 35
+                    const dir = -90 + i * 20 // -90 bis -70
+                    this.fireAngledShot(boss.x - 95, boss.y + y, 180 + this.level * 3, dir)
+                    this.fireAngledShot(boss.x + 95, boss.y + y, 180 + this.level * 3, 90 - i * 20)
+                }
+            }
+            boss.fireTimer = Math.max(0.45, 1.3 - this.level * 0.015)
         }
+        // Bosssraketen – mehr mit steigendem Level
         this.bossRocketTimerS -= dt
         if (this.bossRocketTimerS <= 0) {
             this.bossRocketTimerS = BOSS_ROCKET_EVERY_S
-            const n = Math.min(6, 2 + index)
-            for (let i = 0; i < n; i++) {
-                const dx = (i - (n - 1) / 2) * 40
+            const rCount = Math.min(8, 2 + Math.floor(index * 1.3))
+            for (let i = 0; i < rCount; i++) {
+                const dx = (i - (rCount - 1) / 2) * 40
                 this.spawnEnemyRocket(boss.x + dx, boss.y + 40, BOSS_ROCKET_SPEED, BOSS_ROCKET_TURN, BOSS_ROCKET_LIFE_S, BOSS_ROCKET_RADIUS)
             }
         }
-        // Helpers keep arriving while the boss is alive
+        // Helfer kommen weiter
         this.bossHelperTimerS -= dt
         if (this.bossHelperTimerS <= 0) {
             this.bossHelperTimerS = BOSS_HELPER_EVERY_S
@@ -751,7 +800,9 @@ export class GameScene extends Phaser.Scene {
             hp: tier.hp,
             tint: tier.tint,
         }
+        // Stufe des Raketentyps + Farbskalierung nach Level
         r.img.setTint(tier.tint)
+        if (this.level > 15) r.img.setTintAt(2, 0xffffff) // weiße Hitze bei hohem Level
         this.enemyRockets.push(r)
     }
     private damageRocket(r: EnemyRocket, dmg: number): void {
@@ -761,8 +812,17 @@ export class GameScene extends Phaser.Scene {
         r.dead = true
         this.blast(r.x, r.y, 24, r.tint)
     }
-    private fireShot(x: number, y: number, speed: number): void {
-        this.shots.push(this.makeObj('eshot', x, y, 0, speed, SHOT_RADIUS, 6))
+    private fireShot(x: number, y: number, speed: number, radius: number = SHOT_RADIUS): void {
+        this.shots.push(this.makeObj('eshot', x, y, 0, speed, radius, 6))
+    }
+    // Diagonale/schräge Schüsse (Winkel in Grad: 0=runter, -90=links, 90=rechts, -45=links-unten)
+    private fireAngledShot(x: number, y: number, speed: number, angleDeg: number): void {
+        const rad = Phaser.Math.DegToRad(angleDeg)
+        this.shots.push({
+            ...this.makeObj('eshot', x, y, Math.cos(rad) * speed, Math.sin(rad) * speed, SHOT_RADIUS * 1.6, 6),
+            x, y, vx: Math.cos(rad) * speed, vy: Math.sin(rad) * speed, radius: SHOT_RADIUS * 1.6,
+            dead: false,
+        })
     }
     private damageEnemy(e: Enemy, dmg: number): void {
         if (e.dead) return
