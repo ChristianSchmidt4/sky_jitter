@@ -172,6 +172,16 @@ function isBossLevel(level: number): boolean {
 function hits(a: Circle, b: Circle): boolean {
     return Phaser.Math.Distance.Between(a.x, a.y, b.x, b.y) < a.radius + b.radius
 }
+// Debug-Hilfe: Query-Parameter ?level=N setzt Start-Level und Waffen-Level für schnelles Testen
+function parseDebugLevel(): { level: number; weaponLevel: number } {
+    const params = new URLSearchParams(window.location.search)
+    const lv = parseInt(params.get('level') ?? '', 10)
+    if (lv >= 1 && lv <= MAX_LEVEL) {
+        const wp = Math.min(MAX_WEAPON_LEVEL, 1 + Math.floor(lv / 5))
+        return { level: lv, weaponLevel: wp }
+    }
+    return { level: 1, weaponLevel: 1 }
+}
 export class GameScene extends Phaser.Scene {
     private background!: Background
     private player!: Phaser.GameObjects.Image
@@ -269,6 +279,8 @@ export class GameScene extends Phaser.Scene {
     }
     // Called before every start and restart: resets all run state
     init(): void {
+        // Debug-Level aus URL lesen (z. B. ?level=20)
+        const debug = parseDebugLevel()
         this.state = 'playing'
         this.pausedFrom = 'playing'
         this.px = W / 2
@@ -276,10 +288,10 @@ export class GameScene extends Phaser.Scene {
         this.lives = START_LIVES
         this.playerShield = PLAYER_SHIELD_MAX
         this.score = 0
-        this.level = 1
+        this.level = debug.level
         this.missileAmmo = START_MISSILES
         this.bonusWeapon = 0
-        this.weaponLevel = 1
+        this.weaponLevel = debug.weaponLevel
         this.invulnS = 0
         this.clockMs = 0
         this.nextFireMs = 0

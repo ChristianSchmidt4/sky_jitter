@@ -13,6 +13,10 @@ npm run build:github # Build für GitHub Pages (base /sky_jitter/)
 npm test             # Playwright-Tests
 ```
 Auf dem Gerät: Browser öffnen, „Zum Startbildschirm hinzufügen" für Vollbild-Modus.
+## Debug & Testen
+- **Level vorgabe**: `?level=N` setzt das Start-Level (1–50). Das Waffen-Level wird automatisch aus dem Level berechnet (`⌊Level/5⌋ + 1, max 10`).
+  - Beispiel: `http://localhost:5173/?level=20` → Start auf Level 20, Waffenstufe 5
+  - Beispiel: `http://localhost:5173/?level=45` → Start auf Level 45, Waffenstufe 10, Boss-Verfügbar
 ## Steuerung
 | Aktion | Mobil | Desktop |
 |--------|-------|---------|
