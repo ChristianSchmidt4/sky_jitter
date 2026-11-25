@@ -30,7 +30,7 @@ class ChiptuneAudio {
     return this.enabled
   }
   get isLocked(): boolean {
-    return this.isLocked
+    return this.locked
   }
   get audioContext(): AudioContext | null {
     return this.ctx
