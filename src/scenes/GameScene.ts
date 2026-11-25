@@ -518,6 +518,8 @@ export class GameScene extends Phaser.Scene {
                 damage: spec.damage,
             }
             if (s.angle !== 0) b.img.setRotation(rad)
+            // Autofire: player bullets 70% alpha (transparenter)
+            if (this.autofire) b.img.setAlpha(0.7)
             this.bullets.push(b)
         }
         this.nextFireMs = this.clockMs + spec.cooldownMs
